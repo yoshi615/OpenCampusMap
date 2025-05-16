@@ -30,17 +30,12 @@ function init() {
 		}
 	});
 	
-	// ...existing code...
 	let lastClickedMarker = null; // 最後にクリックしたマーカーを追跡
 	// 言語切り替え設定
 	 let currentLanguage = 'japanese'; // 初期言語
 	function setLanguage(language) {
 		currentLanguage = language;
 		regenerateLeftPanel(); // 左パネルを再生成
-		// if (lastClickedMarker) {
-		//      lastClickedMarker.getElement().click(); // 最後にクリックしたマーカーを再クリックして更新
-		// }
-		//  updateTextContent();
 	}
 
 	function updateTextContent() { // ここを追加
@@ -53,12 +48,6 @@ function init() {
 			}
 		});
 	}
-
-	// ボタンクリックイベントを登録
-	// document.getElementById('language-toggle-button').addEventListener('click', () => {
-	//     const newLanguage = currentLanguage === 'japanese' ? 'english' : 'japanese';
-	//     setLanguage(newLanguage);
-	// });
 
 	// Replace language button event listener with toggle
 	document.getElementById('languageToggle').addEventListener('change', function(e) {
@@ -76,9 +65,6 @@ function init() {
 			: (isVisible ? 'ツール' : 'ツールを表示');
 	});
 
-	// document.getElementById('add-geojson-layer-button').addEventListener('click', addGeoJsonLayer);
-	// document.getElementById('remove-geojson-layer-button').addEventListener('click', removeGeoJsonLayer);
-
 	// 初期メッセージを設定
 	  document.getElementById('info').innerHTML = '言語の選択とアイコンをクリックまたはタップして詳細を表示';
 		const element = document.getElementById('info');
@@ -94,31 +80,10 @@ function init() {
 
 
 
-
-	// Mapboxのアクセストークン
-	// mapboxgl.accessToken = 'pk.eyJ1IjoieW9oamFwYW4iLCJhIjoiY2xnYnRoOGVmMDFsbTNtbzR0eXV6a2IwZCJ9.kJYURwlqIx_cpXvi66N0uw';
-	// mapboxgl.accessToken = 'pk.eyJ1IjoieW9obWFuIiwiYSI6IkxuRThfNFkifQ.u2xRJMiChx914U7mOZMiZw';
-
 	// データを取得
 	let rows = data.main.values;
 	let markers = [];
 	initMap();
-
-	// filter rows based on marker-filter dropdown
-	// const dropdown = document.getElementById('marker-filter');
-	// dropdown.addEventListener('change', function() {
-	//     const category = parseInt(dropdown.value);
-	//     console.log(category);
-	//     if (category == -1) {
-	//         console.log('all');
-	//         rows = data.main.values;
-	//     } else {
-	//         console.log('filtered');
-	//         rows = data.main.values.filter(row => parseInt(row[1]) === category);
-	//     }
-		
-	//     initMap();
-	// });
 
 	// current marker idの変数
 	let currentMarkerId = null;
@@ -359,8 +324,6 @@ function init() {
 
 				currentMarkerId = id;
 				const leftPanel = document.getElementById('left-panel');
-				const rightPanel = document.getElementById('right-panel');
-				const mapElement = document.getElementById('map');
 				
 				// Reset slide index when new marker is clicked
 				slideIndex = 1;
@@ -431,24 +394,7 @@ function init() {
 	}
 
 	// 初期設定
-	// initMap();
-
 	// filter rows based on marker-filter dropdown
-	const markerFilterDropdown = document.getElementById('marker-filter');
-	// markerFilterDropdown.addEventListener('change', function() {
-	//     const category = parseInt(markerFilterDropdown.value);
-	//     console.log(category);
-	//     if (category == -1) {
-	//         console.log('all');
-	//         rows = data.main.values;
-	//     } else {
-	//         console.log('filtered');
-	//         rows = data.main.values.filter(row => parseInt(row[1]) === category);
-	//     }
-		
-	//     initMap();
-	// });
-
 	// Replace the 3D button event listeners with this:
 	document.getElementById('threeDToggle').addEventListener('change', function(e) {
 		if (e.target.checked) {
