@@ -560,4 +560,31 @@ function removeGeoJsonLayer() {
 		bearing: 0,
 		duration: 1000
 	});
-}
+}// GPSボタンのクリックイベント
+document.getElementById('gps-button').addEventListener('click', () => {
+	if (!navigator.geolocation) {
+		alert('位置情報がサポートされていません');
+		return;
+	}
+
+	navigator.geolocation.getCurrentPosition(
+		(position) => {
+			const { latitude, longitude } = position.coords;
+
+			// 現在地にマーカーを追加
+			new maplibregl.Marker({ color: 'blue' })
+				.setLngLat([longitude, latitude])
+				.setPopup(new maplibregl.Popup().setText('現在地'))
+				.addTo(map);
+
+			// 地図を現在地に移動
+			map.flyTo({
+				center: [longitude, latitude],
+				zoom: 17
+			});
+		},
+		(error) => {
+			alert('位置情報の取得に失敗しました: ' + error.message);
+		}
+	);
+});
