@@ -146,29 +146,7 @@ function init() {
 		if (!map) {
 			map = new maplibregl.Map({
 			container: 'map',
-			style: {
-				"version": 8,
-				"sources": {
-				  "gsi-std": {
-					"type": "raster",
-					"tiles": [
-					  "https://tile.mierune.co.jp/mierune/{z}/{x}/{y}.png"
-					], // MIERUNEのタイルURL 
-					"tileSize": 256,
-					"attribution": "© Maptiles by MIERUNE, under CC BY. Data by OpenStreetMap contributors, under ODbL."
-				  }
-				},
-				"layers": [
-				  {
-					"id": "gsi-std-layer",
-					"type": "raster",
-					"source": "gsi-std",
-					"minzoom": 0,
-					"maxzoom": 18
-				  }
-				]
-			  },
-			
+			style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
 			center: [centerLon, centerLat],
 			// zoom: 15
 			});
