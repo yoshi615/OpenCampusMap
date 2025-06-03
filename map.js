@@ -274,7 +274,8 @@ function init() {
 			markers.push(marker);
 			customMarker.title = currentLanguage === 'japanese' ? jName : eName;
 
-			marker.getElement().addEventListener('click', () => {
+			marker.getElement().addEventListener('click', (event) => {
+				event.stopPropagation(); // ←これを追加
 				// If same marker is clicked again, do nothing
 				if (lastClickedMarker === marker) {
 					document.getElementById('info').innerHTML = 'マーカーをクリックまたはタップして詳細を表示';
@@ -464,16 +465,35 @@ function init() {
 	// 地図初期化後にクリックイベントを追加
 	function addRouteOnClick() {
 		map.on('click', async (e) => {
-			if (gateLat === null || gateLon === null) {
+			 // クリック地点が既存マーカーの座標と一致する場合はルート検索しない
+			const clickLng = e.lngLat.lng;
+			const clickLat = e.lngLat.lat;
+			const threshold = 0.00005; // 緯度経度の許容誤差（約5m）
+
+			// allRowsは全マーカー情報
+			const isMarkerClicked = allRows.some(row => {
+				const markerLat = parseFloat(row[4]);
+				const markerLon = parseFloat(row[5]);
+				return (
+					Math.abs(markerLat - clickLat) < threshold &&
+					Math.abs(markerLon - clickLng) < threshold
+				);
+			});
+
+			if (isMarkerClicked) {
+				// マーカー上のクリックなら何もしない
+				return;
+			}
+			else if (gateLat === null || gateLon === null) {
 				findGateLatLon();
 				if (gateLat === null || gateLon === null) {
-					alert('校舎かえでの座標が見つかりません');
+					alert('正門の座標が見つかりません');
 					return;
 				}
 			}
 			const start = [e.lngLat.lng, e.lngLat.lat];
 			const end = [gateLon, gateLat];
-			// OSRMサーバーのURL（自前サーバー or 公開サーバー）
+			// OSRMサーバーのURL（公開サーバー）
 			const osrmUrl = `https://router.project-osrm.org/route/v1/foot/${start[0]},${start[1]};${end[0]},${end[1]}?overview=full&geometries=geojson`;
 
 			try {
@@ -502,7 +522,7 @@ function init() {
 					type: 'line',
 					source: routeSourceId,
 					paint: {
-						'line-color': '#ff0000',
+						'line-color': '#adff2f',
 						'line-width': 5
 					}
 				});
