@@ -721,3 +721,27 @@ input:checked + .lang-slider .ja,
 #marker-search::placeholder {
     color:#ffffff;
 }
+.custom-popup {
+  font-size: 1.1em;
+  font-weight: bold;
+  background: #cecece;
+  color: #222;
+  padding: 8px 16px;
+  border-radius: 8px;
+  z-index: 1000001;
+}
+.maplibregl-popup-content {
+  background: #cecece !important;
+  color: #222 !important;
+  border-radius: 8px;
+  font-size: 1.1em;
+  font-weight: bold;
+  padding: 8px 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    z-index: 1000000;
+}
+.maplibregl-popup-tip {
+  border-top-color: #cecece !important;
+  border-bottom-color: #cecece !important;
+  z-index: 1000000;
+}

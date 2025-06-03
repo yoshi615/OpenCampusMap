@@ -464,6 +464,7 @@ function init() {
 
 	// 地図初期化後にクリックイベントを追加
 	function addRouteOnClick() {
+		let routePopup = null;
 		map.on('click', async (e) => {
 			 // クリック地点が既存マーカーの座標と一致する場合はルート検索しない
 			const clickLng = e.lngLat.lng;
@@ -508,6 +509,10 @@ function init() {
 				// 既存ルートを削除
 				if (map.getLayer(routeLayerId)) map.removeLayer(routeLayerId);
 				if (map.getSource(routeSourceId)) map.removeSource(routeSourceId);
+				if (routePopup) {
+					routePopup.remove();
+					routePopup = null;
+				}
 
 				// ルートをGeoJSONとして追加
 				map.addSource(routeSourceId, {
@@ -517,6 +522,19 @@ function init() {
 						geometry: route
 					}
 				});
+				const distance = json.routes[0].distance; // meters
+				const walkingSpeed = 1.3; // m/s (約4.7km/h)
+				const durationSeconds = distance / walkingSpeed;
+				const durationMinutes = Math.round(durationSeconds / 60);
+
+				const infoDiv = document.getElementById('info');
+				if (infoDiv) {
+					const distanceKm = (distance / 1000).toFixed(2);
+					const timeText = currentLanguage === 'japanese'
+						? `距離: ${distanceKm}km<br>徒歩の目安: 約${durationMinutes}分`
+						: `Distance: ${distanceKm}km<br>Estimated walk: ~${durationMinutes} min`;
+					infoDiv.innerHTML = timeText + '<br>' + infoDiv.innerHTML;
+				}
 				map.addLayer({
 					id: routeLayerId,
 					type: 'line',
@@ -526,7 +544,17 @@ function init() {
 						'line-width': 5
 					}
 				});
-
+				if (route.coordinates && route.coordinates.length > 1) {
+					const midIndex = Math.floor(route.coordinates.length / 2);
+					const midCoord = route.coordinates[midIndex];
+					const popupText = currentLanguage === 'japanese'
+						? `徒歩 約${durationMinutes}分`
+						: `~${durationMinutes} min walk`;
+					routePopup = new maplibregl.Popup({ closeOnClick: false, closeButton: false })
+						.setLngLat(midCoord)
+						.setHTML(`<div class="custom-popup">${popupText}</div>`)
+						.addTo(map);
+				}
 			} catch (err) {
 				alert('経路取得に失敗しました');
 				console.error(err);
