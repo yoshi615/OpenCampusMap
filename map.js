@@ -444,6 +444,78 @@ function init() {
 			: (isVisible ? 'Show map options' : 'Hide map options');
 	});
 
+	// 正門の座標（例：データから取得する場合は自動化してください）
+	const GATE_NAME = '正門';
+	let gateLat = null, gateLon = null;
+
+	// rowsから正門の座標を取得
+	function findGateLatLon() {
+		const gateRow = data.main.values.find(row => row[2] === GATE_NAME);
+		if (gateRow) {
+			gateLat = parseFloat(gateRow[4]);
+			gateLon = parseFloat(gateRow[5]);
+		}
+	}
+
+	// ルートレイヤーを管理
+	let routeLayerId = 'osrm-route-layer';
+	let routeSourceId = 'osrm-route-source';
+
+	// 地図初期化後にクリックイベントを追加
+	function addRouteOnClick() {
+		map.on('click', async (e) => {
+			if (gateLat === null || gateLon === null) {
+				findGateLatLon();
+				if (gateLat === null || gateLon === null) {
+					alert('校舎かえでの座標が見つかりません');
+					return;
+				}
+			}
+			const start = [e.lngLat.lng, e.lngLat.lat];
+			const end = [gateLon, gateLat];
+			// OSRMサーバーのURL（自前サーバー or 公開サーバー）
+			const osrmUrl = `https://router.project-osrm.org/route/v1/foot/${start[0]},${start[1]};${end[0]},${end[1]}?overview=full&geometries=geojson`;
+
+			try {
+				const res = await fetch(osrmUrl);
+				const json = await res.json();
+				if (!json.routes || json.routes.length === 0) {
+					alert('ルートが見つかりません');
+					return;
+				}
+				const route = json.routes[0].geometry;
+
+				// 既存ルートを削除
+				if (map.getLayer(routeLayerId)) map.removeLayer(routeLayerId);
+				if (map.getSource(routeSourceId)) map.removeSource(routeSourceId);
+
+				// ルートをGeoJSONとして追加
+				map.addSource(routeSourceId, {
+					type: 'geojson',
+					data: {
+						type: 'Feature',
+						geometry: route
+					}
+				});
+				map.addLayer({
+					id: routeLayerId,
+					type: 'line',
+					source: routeSourceId,
+					paint: {
+						'line-color': '#ff0000',
+						'line-width': 5
+					}
+				});
+
+			} catch (err) {
+				alert('経路取得に失敗しました');
+				console.error(err);
+			}
+		});
+	}
+
+	addRouteOnClick();
+
 }
 
 // Keep these functions outside init() as they're used globally
