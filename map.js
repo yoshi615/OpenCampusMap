@@ -61,8 +61,8 @@ function init() {
 		// Update tools button text
 		const isVisible = mapTools.classList.contains('visible');
 		toolsToggle.textContent = newLanguage === 'english' 
-			? (isVisible ? 'Tools' : 'Show Tools')
-			: (isVisible ? 'ツール' : 'ツールを表示');
+			? (isVisible ? 'Hide Tools' : 'Show Tools')
+			: (isVisible ? 'ツールを非表示' : 'ツールを表示');
 	});
 
 	// 初期メッセージを設定
@@ -70,15 +70,11 @@ function init() {
 		const element = document.getElementById('info');
 
 		// 要素の位置を少し下げる
-		element.style.marginTop = '20px';  // 20px 下げる
+		element.style.marginTop = '20px';
 
 	// すべてのマーカーの平均緯度と経度を計算
 	let latSum = 0;
 	let lonSum = 0;
-
-	
-
-
 
 	// データを取得
 	let rows = data.main.values;
@@ -441,8 +437,8 @@ function init() {
 		const isVisible = mapTools.classList.contains('visible');
 		mapTools.classList.toggle('visible');
 		toolsToggle.textContent = currentLanguage === 'japanese' 
-			? (isVisible ? '地図オプションを表示' : '地図オプションを非表示')
-			: (isVisible ? 'Show map options' : 'Hide map options');
+			? (isVisible ? 'ツールを表示' : 'ツールを非表示')
+			: (isVisible ? 'Show Tools' : 'Hide Tools');
 	});
 
 	// 正門の座標（例：データから取得する場合は自動化してください）
