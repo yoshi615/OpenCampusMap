@@ -2,6 +2,11 @@ let map; // グローバル変数として定義
 
 // Remove the DOMContentLoaded wrapper and let getdata.js handle initialization
 function init() {
+	const leftPanel = document.getElementById('left-panel');
+
+	// left-panelをマップ読み込み時に必ず非表示にする
+	leftPanel.classList.add('closed');
+	document.body.classList.remove('panel-open');
 
 	let slideIndex = 1;
 
@@ -304,6 +309,7 @@ function init() {
 				// Remove closed class to show panel
 				leftPanel.classList.remove('closed');
 				document.body.classList.add('panel-open');
+				showClosePanelBtn(true); // ← ここで表示
 				
 				// Adjust map height for mobile
 				if (window.innerWidth <= 767) {
@@ -415,7 +421,7 @@ function init() {
 	});
 
 	// Add panel toggle functionality
-	const leftPanel = document.getElementById('left-panel');
+	// const leftPanel = document.getElementById('left-panel'); // Already declared above, do not redeclare
 	const panelHandle = document.getElementById('panel-handle');
 
 	panelHandle.addEventListener('click', () => {
@@ -560,6 +566,30 @@ function init() {
 
 	addRouteOnClick();
 
+	const closePanelBtn = document.getElementById('close-panel-btn');
+	function showClosePanelBtn(show) {
+		if (closePanelBtn) closePanelBtn.style.display = show ? 'block' : 'none';
+	}
+
+	// パネルを閉じるボタンのイベント
+	if (closePanelBtn) {
+		closePanelBtn.addEventListener('click', () => {
+			leftPanel.classList.add('closed');
+			document.body.classList.remove('panel-open');
+			showClosePanelBtn(false);
+		});
+	}
+	// パネルハンドルでパネルを閉じた時はボタンも非表示
+	panelHandle.addEventListener('click', () => {
+		leftPanel.classList.toggle('closed');
+		document.body.classList.toggle('panel-open');
+		if (leftPanel.classList.contains('closed')) {
+			showClosePanelBtn(false);
+		}
+	});
+
+	// パネル再生成時もボタン表示
+	// function regenerateLeftPanel() { ... showClosePanelBtn(true); ... }
 }
 
 // Keep these functions outside init() as they're used globally
