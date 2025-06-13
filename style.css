@@ -1,15 +1,25 @@
 /* PC用レイアウト */
 @media (min-width: 768px) {
     body {
-        margin: 0;
+        margin: 0 !important; /* ← 念のためimportant */
+        padding: 0 !important;
         display: flex;
         flex-direction: row;
         font-family: sans-serif;
         overflow-y: hidden;
+        overflow-x: hidden;
+    }
+    .container {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100vw;
+        box-sizing: border-box;
+        display: flex;         /* 追加: flexで横並びに */
+        height: 100vh;         /* 追加: 高さを100vhに */
     }
     #left-panel {
         width: 30%;
-        padding: 40px 10px;
+        padding: 40px 10px 40px 0; /* ← 左パディングを0に */
         overflow-x: hidden;
         overflow-y: auto !important;
         border-right: 1px solid #ddd;
@@ -20,9 +30,13 @@
         z-index: 2;
         transition: margin-left 0.3s ease-in-out;
         background-color: rgba(41,100,96,0.2);
+        flex-shrink: 0;        /* 追加: サイズが縮まないように */
     }
     #left-panel.closed {
-        margin-left: calc(-30% + -27px);
+        margin-left: -30%; /* ←修正: -27pxを除去 */
+        border-right: none; /* 追加: 閉じたときに右線を消す */
+        background: transparent; /* 追加: 背景も消す */
+        box-shadow: none; /* 追加: 影も消す */
     }
     #left-panel.closed + #right-panel {
         width: 100%;
@@ -45,7 +59,7 @@
         box-shadow: 2px 0 4px rgba(0,0,0,0.1);
     }
     .handle-icon {
-        color: #296460; /* replaced #296460 */
+        color: #296460;
         font-size: 24px;
         font-weight: bold;
         transform: rotate(180deg); /* Point left when open */
@@ -55,17 +69,23 @@
         transform: rotate(0deg); /* Point right when closed */
     }
     #right-panel {
-        width: 70%;
+        width: 100%;
         height: 100vh;
         position: relative;
         z-index: 1;
-        /* overflow-y: hidden !important; */
+        left: 0;
+        right: 0;
+        flex: 1 1 0%;         /* 追加: 残り幅を全て使う */
+        min-width: 0;         /* 追加: はみ出し防止 */
     }
     #map {
         height: 100vh;
         width: 100%;
         position: absolute;
-        z-index: 1; /* Ensure map stays below panel and handle */
+        right: -27px;
+        z-index: 1;
+        top: 0;               /* 追加: 上端に揃える */
+        left: 0;              /* 追加: 左端に揃える */
     }
     #map-style {
         display: none;
@@ -744,4 +764,29 @@ input:checked + .lang-slider .ja,
   border-top-color: #cecece !important;
   border-bottom-color: #cecece !important;
   z-index: 1000000;
+}
+
+#close-panel-btn {
+    background: #296460;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transition: background 0.2s;
+    display: none; /* 初期は非表示 */
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+    line-height: 32px;   /* 追加: 高さと同じにして中央揃え */
+    text-align: center;  /* 追加: 水平中央揃え */
+    padding: 0;          /* 追加: 余白をなくす */
+}
+#close-panel-btn:hover {
+    background: #163900;
 }

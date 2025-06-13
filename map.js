@@ -2,6 +2,11 @@ let map; // グローバル変数として定義
 
 // Remove the DOMContentLoaded wrapper and let getdata.js handle initialization
 function init() {
+	const leftPanel = document.getElementById('left-panel');
+
+	// left-panelをマップ読み込み時に必ず非表示にする
+	leftPanel.classList.add('closed');
+	document.body.classList.remove('panel-open');
 
 	let slideIndex = 1;
 
@@ -61,8 +66,8 @@ function init() {
 		// Update tools button text
 		const isVisible = mapTools.classList.contains('visible');
 		toolsToggle.textContent = newLanguage === 'english' 
-			? (isVisible ? 'Tools' : 'Show Tools')
-			: (isVisible ? 'ツール' : 'ツールを表示');
+			? (isVisible ? 'Hide Tools' : 'Show Tools')
+			: (isVisible ? 'ツールを非表示' : 'ツールを表示');
 	});
 
 	// 初期メッセージを設定
@@ -70,15 +75,11 @@ function init() {
 		const element = document.getElementById('info');
 
 		// 要素の位置を少し下げる
-		element.style.marginTop = '20px';  // 20px 下げる
+		element.style.marginTop = '20px';
 
 	// すべてのマーカーの平均緯度と経度を計算
 	let latSum = 0;
 	let lonSum = 0;
-
-	
-
-
 
 	// データを取得
 	let rows = data.main.values;
@@ -308,6 +309,7 @@ function init() {
 				// Remove closed class to show panel
 				leftPanel.classList.remove('closed');
 				document.body.classList.add('panel-open');
+				showClosePanelBtn(true); // ← ここで表示
 				
 				// Adjust map height for mobile
 				if (window.innerWidth <= 767) {
@@ -419,7 +421,7 @@ function init() {
 	});
 
 	// Add panel toggle functionality
-	const leftPanel = document.getElementById('left-panel');
+	// const leftPanel = document.getElementById('left-panel'); // Already declared above, do not redeclare
 	const panelHandle = document.getElementById('panel-handle');
 
 	panelHandle.addEventListener('click', () => {
@@ -441,8 +443,8 @@ function init() {
 		const isVisible = mapTools.classList.contains('visible');
 		mapTools.classList.toggle('visible');
 		toolsToggle.textContent = currentLanguage === 'japanese' 
-			? (isVisible ? '地図オプションを表示' : '地図オプションを非表示')
-			: (isVisible ? 'Show map options' : 'Hide map options');
+			? (isVisible ? 'ツールを表示' : 'ツールを非表示')
+			: (isVisible ? 'Show Tools' : 'Hide Tools');
 	});
 
 	// 正門の座標（例：データから取得する場合は自動化してください）
@@ -564,6 +566,30 @@ function init() {
 
 	addRouteOnClick();
 
+	const closePanelBtn = document.getElementById('close-panel-btn');
+	function showClosePanelBtn(show) {
+		if (closePanelBtn) closePanelBtn.style.display = show ? 'block' : 'none';
+	}
+
+	// パネルを閉じるボタンのイベント
+	if (closePanelBtn) {
+		closePanelBtn.addEventListener('click', () => {
+			leftPanel.classList.add('closed');
+			document.body.classList.remove('panel-open');
+			showClosePanelBtn(false);
+		});
+	}
+	// パネルハンドルでパネルを閉じた時はボタンも非表示
+	panelHandle.addEventListener('click', () => {
+		leftPanel.classList.toggle('closed');
+		document.body.classList.toggle('panel-open');
+		if (leftPanel.classList.contains('closed')) {
+			showClosePanelBtn(false);
+		}
+	});
+
+	// パネル再生成時もボタン表示
+	// function regenerateLeftPanel() { ... showClosePanelBtn(true); ... }
 }
 
 // Keep these functions outside init() as they're used globally
