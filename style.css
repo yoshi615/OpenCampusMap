@@ -1,46 +1,115 @@
+/* 共通スタイル */
+button {
+    background-color: #296460;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #163900;
+}
+
+.slideshow-container {
+    position: relative;
+    max-width: 100%;
+    margin: auto;
+}
+
+.mySlides {
+    display: none;
+}
+
+.mySlides img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+}
+
+.fade {
+    animation: fade 1.5s;
+}
+
+@keyframes fade { 
+    from { opacity: .4 } 
+    to { opacity: 1 } 
+}
+
+.prev, .next {
+    cursor: pointer;
+    position: absolute;
+    top: 50%;
+    padding: 16px;
+    margin-top: -22px;
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+    transition: 0.6s ease;
+    user-select: none;
+}
+
+.prev {
+    left: 0;
+    border-radius: 3px 0 0 3px;
+}
+
+.next {
+    right: 0;
+    border-radius: 3px 0 0 3px;
+}
+
+.prev:hover, .next:hover {
+    background-color: rgba(0,0,0,0.8);
+}
+
 /* PC用レイアウト */
 @media (min-width: 768px) {
     body {
-        margin: 0 !important; /* ← 念のためimportant */
+        margin: 0 !important;
         padding: 0 !important;
         display: flex;
         flex-direction: row;
         font-family: sans-serif;
-        overflow-y: hidden;
-        overflow-x: hidden;
+        overflow: hidden;
     }
+    
     .container {
         margin: 0 !important;
         padding: 0 !important;
         width: 100vw;
         box-sizing: border-box;
-        display: flex;         /* 追加: flexで横並びに */
-        height: 100vh;         /* 追加: 高さを100vhに */
+        display: flex;
+        height: 100vh;
     }
+    
     #left-panel {
         width: 30%;
-        padding: 40px 10px 40px 0; /* ← 左パディングを0に */
+        padding: 40px 10px 40px 0;
         overflow-x: hidden;
         overflow-y: auto !important;
         border-right: 1px solid #ddd;
         height: 100vh;
         position: relative;
-        background: white;
+        background: rgba(41,100,96,0.2);
         box-sizing: border-box;
         z-index: 2;
         transition: margin-left 0.3s ease-in-out;
-        background-color: rgba(41,100,96,0.2);
-        flex-shrink: 0;        /* 追加: サイズが縮まないように */
+        flex-shrink: 0;
     }
+    
     #left-panel.closed {
-        margin-left: -30%; /* ←修正: -27pxを除去 */
-        border-right: none; /* 追加: 閉じたときに右線を消す */
-        background: transparent; /* 追加: 背景も消す */
-        box-shadow: none; /* 追加: 影も消す */
+        margin-left: -30%;
+        border-right: none;
+        background: transparent;
+        box-shadow: none;
     }
+    
     #left-panel.closed + #right-panel {
         width: 100%;
     }
+    
     #panel-handle {
         position: absolute;
         right: -32px;
@@ -58,41 +127,41 @@
         border-radius: 0 4px 4px 0;
         box-shadow: 2px 0 4px rgba(0,0,0,0.1);
     }
+    
     .handle-icon {
         color: #296460;
         font-size: 24px;
         font-weight: bold;
-        transform: rotate(180deg); /* Point left when open */
+        transform: rotate(180deg);
         transition: transform 0.3s;
     }
+    
     #left-panel.closed .handle-icon {
-        transform: rotate(0deg); /* Point right when closed */
+        transform: rotate(0deg);
     }
+    
     #right-panel {
-        width: 100%;
+        flex: 1 1 0%;
         height: 100vh;
         position: relative;
         z-index: 1;
-        left: 0;
-        right: 0;
-        flex: 1 1 0%;         /* 追加: 残り幅を全て使う */
-        min-width: 0;         /* 追加: はみ出し防止 */
+        min-width: 0;
     }
+    
     #map {
         height: 100vh;
         width: 100%;
         position: absolute;
         right: -27px;
         z-index: 1;
-        top: 0;               /* 追加: 上端に揃える */
-        left: 0;              /* 追加: 左端に揃える */
+        top: 0;
+        left: 0;
     }
-    #map-style {
+    
+    #map-style, #marker-filter-dropdown {
         display: none;
     }
-    #marker-filter-dropdown {
-        display: none;
-    }
+    
     #map-tools {
         position: absolute;
         top: 50px;
@@ -103,11 +172,11 @@
         visibility: hidden;
         padding: 10px;
         background-color: white;
-        opacity: 0.5;
         border-radius: 4px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        display: none;  /* Hide by default */
+        display: none;
     }
+    
     #map-tools.visible {
         transform: translateX(0);
         opacity: 1;
@@ -115,6 +184,7 @@
         z-index: 9999;
         display: block;
     }
+    
     .map-control {
         display: block;
         margin: 5px 0;
@@ -125,6 +195,7 @@
         font-size: 14px;
         width: 200px;
     }
+    
     select.map-control {
         appearance: none;
         background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
@@ -133,120 +204,70 @@
         background-size: 16px;
         padding-right: 30px;
     }
+    
     button.map-control {
-        background-color: #296460; /* replaced #296460 */
+        background-color: #296460;
         color: white;
         border: none;
         cursor: pointer;
         transition: background-color 0.3s;
     }
+    
     button.map-control:hover {
-        background-color: #163900; /* replaced #darkcodebase */
+        background-color: #163900;
     }
+    
     #language-control {
         display: none;
     }
-    .slideshow-container {
-        position: relative;
-        max-width: 100%;
-        margin: auto;
-    }
-    .mySlides img {
-        width: 100%;
-        height: auto;
-        object-fit: cover;
-    }
+    
     button {
-        background-color: #296460; /* replaced #296460 */
-        color: white;
         padding: 10px 20px;
         margin: 5px;
-        cursor: pointer;
-        border: none;
         border-radius: 4px;
-        transition: background-color 0.3s ease, transform 0.3s ease;
-        font-size: 16px;
     }
+    
     button:hover {
-        background-color: #163900; /* replaced #darkcodebase */
         transform: scale(1.05);
     }
-    .mySlides {
-        display: none;
-    }
-    .fade {
-        animation-name: fade;
-        animation-duration: 1.5s;
-    }
-    @keyframes fade { from {opacity: .4} to {opacity: 1} }
-    .prev, .next {
-        cursor: pointer;
-        position: absolute;
-        top: 50%;
-        width: auto;
-        padding: 16px;
-        margin-top: -22px;
-        color: white;
-        font-weight: bold;
-        font-size: 18px;
-        transition: 0.6s ease;
-        border-radius: 0 3px 3px 0;
-        user-select: none;
-    }
-    .prev {
-        left: 0;
-        border-radius: 3px 0 0 3px;
-    }
-    .next {
-        right: 0;
-        border-radius: 3px 0 0 3px;
-    }
-    .prev:hover, .next:hover {
-        background-color: rgba(0,0,0,0.8);
-    }
-    /* マーカー検索ボックスのスタイル */
+    
     #marker-search {
         padding: 8px 12px;
         border: 1px solid #aaa;
         border-radius: 6px;
-        margin-bottom: 12px;
-        box-sizing: border-box;
-        outline: none;
-        transition: border 0.2s;
-        margin: 10px 0; 
+        margin: 10px 0;
         width: 130px;
-        height:30px;
+        height: 30px;
         position: absolute;
         z-index: 9999;
         right: 170px;
-        top:6px;
+        top: 6px;
         font-size: 13px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    } 
-    button:hover {
-        background-color: #163900; /* replaced #darkcodebase */
-        transform: scale(1.05);
+        color: white !important;
+        background: #296460;
     }
-    .map-control-btn:hover {
-        background-color: #163900;
+    
+    #marker-search:focus {
+        border: 1.5px solid transparent;
+        outline: none;
+    }
+    
+    #marker-search::placeholder {
+        color: white;
     }
 }
 
-/* =========================
-
-
-    スマートフォン用レイアウト
-
-
-    ========================= */
+/* スマートフォン用レイアウト */
 @media (max-width: 767px) {
     body {
         margin: 0;
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        height: 100vh; /* Ensure body takes full viewport height */
+        height: 100vh;
     }
+    
     #left-panel {
         width: 100%;
         height: 50vh;
@@ -255,27 +276,28 @@
         background: rgba(41, 100, 96, 0.2);
         z-index: 2;
         transition: transform 0.3s ease-in-out;
-        background-color: rgba(41, 100, 96, 0.2);
         overflow-y: auto;
-        transform: translateY(100%); /* Start hidden */
+        transform: translateY(100%);
         padding: 20px;
         box-sizing: border-box;
     }
+    
     #left-panel.closed {
         transform: translateY(100%);
     }
+    
     #left-panel:not(.closed) {
-        transform: translateY(0); /* Show panel when not closed */
+        transform: translateY(0);
     }
-    #left-panel:not(.closed) + #right-panel {
-        height: 50vh;
-    }
+    
+    #left-panel:not(.closed) + #right-panel,
     #left-panel:not(.closed) + #right-panel #map {
         height: 50vh;
     }
+    
     #panel-handle {
-        position: fixed; /* Change to fixed */
-        bottom: 46vh; /* Position at the middle of the viewport */
+        position: fixed;
+        bottom: 46vh;
         left: 50%;
         transform: translateX(-50%);
         width: 60px;
@@ -287,55 +309,59 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 0 0 0 0;
         box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
         z-index: 1000;
         transition: bottom 0.3s ease-in-out;
     }
+    
     #left-panel.closed #panel-handle {
-        bottom: 0; /* Move handle to bottom when panel is closed */
+        bottom: 0;
     }
+    
     .handle-icon {
         color: #296460;
         font-size: 24px;
         font-weight: bold;
-        transform: rotate(90deg); /* Changed from -90deg to 90deg */
+        transform: rotate(90deg);
         transition: transform 0.3s;
     }
+    
     #left-panel.closed .handle-icon {
-        transform: rotate(-90deg); /* Changed from 90deg to -90deg */
+        transform: rotate(-90deg);
     }
+    
     #right-panel {
         width: 100%;
-        height: 100vh; /* Default to full height */
+        height: 100vh;
         transition: height 0.3s ease-in-out;
         position: relative;
-        flex-shrink: 0; /* Prevent panel from shrinking */
+        flex-shrink: 0;
     }
+    
     #map {
-        height: 100vh; /* Default to full height */
+        height: 100vh;
         width: 100%;
         transition: height 0.3s ease-in-out;
     }
-    #map-style {
+    
+    #map-style, #marker-filter-dropdown {
         display: none;
     }
-    #marker-filter-dropdown {
-        display: none;
-    }
+    
     #map-tools {
         position: absolute;
         top: 50px;
-        /* top: auto; */
         right: 10px;
         z-index: 9999;
         padding: 10px;
         background-color: white;
-        display: none;  /* Hide by default */
+        display: none;
     }
+    
     #map-tools.visible {
         display: block;
     }
+    
     .map-control {
         display: block;
         margin: 5px 0;
@@ -346,6 +372,7 @@
         font-size: 12px;
         width: 150px;
     }
+    
     select.map-control {
         appearance: none;
         background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
@@ -354,95 +381,42 @@
         background-size: 16px;
         padding-right: 30px;
     }
-    button.map-control {
-        background-color: #296460; /* replaced #296460 */
-        color: white;
-        border: none;
-        cursor: pointer;
-        transition: background-color 0.3s;
-    }
+    
     button.map-control:hover {
-        background-color: #163900; /* replaced #darkcodebase */
+        background-color: #163900;
     }
+    
     #language-control {
         display: none;
     }
-    .slideshow-container {
-        position: relative;
-        max-width: 100%;
-        margin: auto;
-    }
-    .mySlides img {
-        width: 100%;
-        height: auto;
-        object-fit: cover;
-    }
+    
     button {
-        background-color: #296460; /* replaced #296460 */
-        color: white;
         padding: 10px 20px;
         margin: 5px;
-        cursor: pointer;
-        border: none;
         border-radius: 4px;
-        transition: background-color 0.3s ease, transform 0.3s ease;
-        font-size: 16px;
-    }
-    button:hover {
-        background-color: #163900; /* replaced #darkcodebase */
-        transform: scale(1.05);
-    }
-    .mySlides {
-        display: none;
-    }
-    .fade {
-        animation-name: fade;
-        animation-duration: 1.5s;
-    }
-    @keyframes fade { from {opacity: .4} to {opacity: 1} }
-    .prev, .next {
-        cursor: pointer;
-        position: absolute;
-        top: 50%;
-        width: auto;
-        padding: 16px;
-        margin-top: -22px;
-        color: white;
-        font-weight: bold;
-        font-size: 18px;
-        transition: 0.6s ease;
-        border-radius: 0 3px 3px 0;
-        user-select: none;
-    }
-    .prev {
-        left: 0;
-        border-radius: 3px 0 0 3px;
-    }
-    .next {
-        right: 0;
-        border-radius: 3px 0 0 3px;
-    }
-    .prev:hover, .next:hover {
-        background-color: rgba(0,0,0,0.8);
     }
     
-    /* Add this new style for when panel is open */
+    button:hover {
+        transform: scale(1.05);
+    }
+    
     body.panel-open {
         height: 100vh;
         overflow: hidden;
     }
+    
     body.panel-open #right-panel,
     body.panel-open #map {
         height: 50vh;
     }
 }
 
-/* Replace all switch styles with these new ones */
+/* スイッチスタイル */
 .switch {
     position: relative;
     display: inline-block;
-    width: 60px;  /* Increase width */
-    height: 28px; /* Increase height */
+    width: 60px;
+    height: 28px;
     margin: 5px 0;
 }
 
@@ -461,7 +435,7 @@
     transition: .3s;
     border: 1px solid #bbb;
     box-sizing: border-box;
-    border-radius: 14px; /* Make slider rounded */
+    border-radius: 14px;
 }
 
 .slider:before {
@@ -469,7 +443,7 @@
     content: "";
     height: 24px;
     width: 24px;
-    left: 2px; /* Center the knob */
+    left: 2px;
     top: 2px;
     background-color: #fff;
     transition: .3s;
@@ -479,13 +453,13 @@
 }
 
 input:checked + .slider {
-    background-color: #296460; /* replaced #296460 */
-    border-color: #1a3f00; /* replaced #darkcodebase */
+    background-color: #296460;
+    border-color: #1a3f00;
 }
 
 input:checked + .slider:before {
     transform: translateX(20px);
-    border-color: #1a3f00; /* replaced #darkcodebase */
+    border-color: #1a3f00;
 }
 
 .switch-label {
@@ -500,13 +474,12 @@ input:checked + .slider:before {
     font-weight: bold;
 }
 
-/* Add new language switch styles */
 .lang-slider {
     display: flex;
     justify-content: space-around;
     align-items: center;
     width: 100%;
-    pointer-events: none; /* Allow clicks to pass to checkbox */
+    pointer-events: none;
 }
 
 .lang-option {
@@ -520,7 +493,7 @@ input:checked + .slider:before {
 
 input:checked + .lang-slider .en,
 .lang-slider .ja {
-    color: #296460; /* replaced #296460 */
+    color: #296460;
 }
 
 input:checked + .lang-slider .ja,
@@ -528,7 +501,6 @@ input:checked + .lang-slider .ja,
     color: #666;
 }
 
-/* Modify switch size for language toggle */
 #language-control .switch {
     width: 53px;
     height: 26px;
@@ -543,7 +515,7 @@ input:checked + .lang-slider .ja,
     transform: translateX(26px);
 }
 
-/* Add new control group styles */
+/* コントロールグループ */
 .control-group {
     margin-bottom: 10px;
 }
@@ -553,10 +525,9 @@ input:checked + .lang-slider .ja,
     margin-bottom: 4px;
     color: #333;
     font-size: 14px;
-    font-weight: bold
+    font-weight: bold;
 }
 
-/* Add new checkbox group styles */
 .checkbox-group {
     background: white;
     padding: 8px;
@@ -574,7 +545,6 @@ input:checked + .lang-slider .ja,
 }
 
 .checkbox-label input[type="checkbox"] {
-    /* Custom checkbox styling */
     appearance: none;
     -webkit-appearance: none;
     width: 18px;
@@ -587,8 +557,8 @@ input:checked + .lang-slider .ja,
 }
 
 .checkbox-label input[type="checkbox"]:checked {
-    background-color: #296460; /* replaced #296460 */
-    border-color: #1a3f00; /* replaced #darkcodebase */
+    background-color: #296460;
+    border-color: #1a3f00;
 }
 
 .checkbox-label input[type="checkbox"]:checked::after {
@@ -605,7 +575,6 @@ input:checked + .lang-slider .ja,
     color: #333;
 }
 
-/* Add new control header styles */
 .control-header {
     display: flex;
     justify-content: space-between;
@@ -621,13 +590,13 @@ input:checked + .lang-slider .ja,
 }
 
 .control-link {
-    color: #296460; /* replaced #296460 */
+    color: #296460;
     text-decoration: none;
     transition: color 0.3s;
 }
 
 .control-link:hover {
-    color: #163900; /* replaced #darkcodebase */
+    color: #163900;
     text-decoration: underline;
 }
 
@@ -640,11 +609,11 @@ input:checked + .lang-slider .ja,
     top: 10px;
     right: 10px;
     z-index: 10000;
-    background: #296460; /* replaced #296460 */
+    background: #296460;
     color: white;
     border: none;
     padding: 8px 16px;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
     font-size: 10px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
@@ -652,7 +621,7 @@ input:checked + .lang-slider .ja,
 }
 
 .tools-toggle:hover {
-    background-color: #163900; /* replaced #darkcodebase */
+    background-color: #163900;
 }
 
 .control-row {
@@ -675,7 +644,6 @@ input:checked + .lang-slider .ja,
 .switch-lang .slider {
     width: 100%;
     height: 100%;
-    /* border-radius: 4px; */
 }
 
 .switch-3d .slider:before,
@@ -686,49 +654,54 @@ input:checked + .lang-slider .ja,
     top: 0px;
 }
 
-/* Rebuild the 3D switch button from scratch */
 .switch-3d {
-  width: 44px;
-  height: 24px;
-  position: relative;
-  display: inline-block;
-}
-.switch-3d input {
-  display: none;
-}
-.switch-3d .slider {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  transition: 0.3s;
-  cursor: pointer;
-  border: 1px solid #aaa;
-  box-sizing: border-box;
-}
-.switch-3d .slider:before {
-  content: "";
-  position: absolute;
-  width: 22px;
-  height: 22px;
-  left: 0;
-  top: 0;
-  background-color: #fff;
-  transition: 0.3s;
-  border-right: 1px solid #aaa;
-  box-sizing: border-box;
-}
-.switch-3d input:checked + .slider {
-  background-color: #296460; /* replaced #296460 */
-  border-color: #1a3f00; /* replaced #darkcodebase */
-}
-.switch-3d input:checked + .slider:before {
-  transform: translateX(20px);
-  border-color: #1a3f00; /* replaced #1a3f00 */
+    width: 44px;
+    height: 24px;
+    position: relative;
+    display: inline-block;
 }
 
+.switch-3d input {
+    display: none;
+}
+
+.switch-3d .slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.3s;
+    cursor: pointer;
+    border: 1px solid #aaa;
+    box-sizing: border-box;
+}
+
+.switch-3d .slider:before {
+    content: "";
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    left: 0;
+    top: 0;
+    background-color: #fff;
+    transition: 0.3s;
+    border-right: 1px solid #aaa;
+    box-sizing: border-box;
+}
+
+.switch-3d input:checked + .slider {
+    background-color: #296460;
+    border-color: #1a3f00;
+}
+
+.switch-3d input:checked + .slider:before {
+    transform: translateX(20px);
+    border-color: #1a3f00;
+}
+
+/* その他のUI要素 */
 #reitaku-logo {
     position: absolute;
     top: 10px;
@@ -738,39 +711,32 @@ input:checked + .lang-slider .ja,
     z-index: 10000;
     filter: drop-shadow(0 0 2px white);
 }
-#marker-search {
-    color: rgb(255, 255, 255) !important;
-    background: #296460;
-}
-#marker-search:focus {
-    border: 1.5px solid #ffffff00;
-}
-#marker-search::placeholder {
-    color:#ffffff;
-}
+
 .custom-popup {
-  font-size: 1.1em;
-  font-weight: bold;
-  background: #cecece;
-  color: #222;
-  padding: 8px 16px;
-  border-radius: 8px;
-  z-index: 1000001;
+    font-size: 1.1em;
+    font-weight: bold;
+    background: #cecece;
+    color: #222;
+    padding: 8px 16px;
+    border-radius: 8px;
+    z-index: 2000001;
 }
+
 .maplibregl-popup-content {
-  background: #cecece !important;
-  color: #222 !important;
-  border-radius: 8px;
-  font-size: 1.1em;
-  font-weight: bold;
-  padding: 8px 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    z-index: 1000000;
+    background: #cecece !important;
+    color: #222 !important;
+    border-radius: 8px;
+    font-size: 1.1em;
+    font-weight: bold;
+    padding: 8px 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    z-index: 2000000;
 }
+
 .maplibregl-popup-tip {
-  border-top-color: #cecece !important;
-  border-bottom-color: #cecece !important;
-  z-index: 1000000;
+    border-top-color: #cecece !important;
+    border-bottom-color: #cecece !important;
+    z-index: 2000000;
 }
 
 #close-panel-btn {
@@ -785,17 +751,16 @@ input:checked + .lang-slider .ja,
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     transition: background 0.2s;
-    display: none; /* 初期は非表示 */
+    display: none;
     position: absolute;
     top: 10px;
     right: 10px;
     z-index: 10;
-    line-height: 32px;   /* 追加: 高さと同じにして中央揃え */
-    text-align: center;  /* 追加: 水平中央揃え */
-    padding: 0;          /* 追加: 余白をなくす */
+    line-height: 32px;
+    text-align: center;
+    padding: 0;
 }
 
-/* 新しいマップコントロールスタイル */
 .map-controls-top-right {
     position: absolute;
     top: 10px;
@@ -807,7 +772,7 @@ input:checked + .lang-slider .ja,
 }
 
 .map-control-btn {
-    position:absolute !important;
+    position: absolute !important;
     z-index: 1001 !important;
     top: 630px !important;
     right: 3px !important;
@@ -820,67 +785,4 @@ input:checked + .lang-slider .ja,
     white-space: nowrap;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     transition: background-color 0.3s ease;
-}
-
-/* 基本的なスタイル */
-.slideshow-container {
-    position: relative;
-    max-width: 100%;
-    margin: auto;
-}
-
-.mySlides {
-    display: none;
-}
-
-.mySlides img {
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-}
-
-button {
-    background-color: #296460; /* replaced #296460 */
-    color: white;
-    padding: 10px 20px;
-    margin: 5px;
-    cursor: pointer;
-    border: none;
-    border-radius: 4px;
-    transition: background-color 0.3s ease, transform 0.3s ease;
-    font-size: 16px;
-}
-
-.mySlides {
-    display: none;
-}
-.fade {
-    animation-name: fade;
-    animation-duration: 1.5s;
-}
-@keyframes fade { from {opacity: .4} to {opacity: 1} }
-.prev, .next {
-    cursor: pointer;
-    position: absolute;
-    top: 50%;
-    width: auto;
-    padding: 16px;
-    margin-top: -22px;
-    color: white;
-    font-weight: bold;
-    font-size: 18px;
-    transition: 0.6s ease;
-    border-radius: 0 3px 3px 0;
-    user-select: none;
-}
-.prev {
-    left: 0;
-    border-radius: 3px 0 0 3px;
-}
-.next {
-    right: 0;
-    border-radius: 3px 0 0 3px;
-}
-.prev:hover, .next:hover {
-    background-color: rgba(0,0,0,0.8);
 }
