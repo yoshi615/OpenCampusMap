@@ -1,4 +1,5 @@
 let map; // グローバル変数として定義
+let currentLocationMarker = null; // 現在地マーカーを管理
 
 // Remove the DOMContentLoaded wrapper and let getdata.js handle initialization
 function init() {
@@ -64,10 +65,20 @@ function init() {
 		setLanguage(newLanguage);
 		
 		// Update tools button text
-		const isVisible = mapTools.classList.contains('visible');
-		toolsToggle.textContent = newLanguage === 'english' 
-			? (isVisible ? 'Hide Tools' : 'Show Tools')
-			: (isVisible ? 'ツールを非表示' : 'ツールを表示');
+		const mapTools = document.getElementById('map-tools');
+		const toolsToggle = document.getElementById('tools-toggle');
+		if (mapTools && toolsToggle) {
+			const isVisible = mapTools.classList.contains('visible');
+			toolsToggle.textContent = newLanguage === 'english' 
+				? (isVisible ? 'Hide Tools' : 'Show Tools')
+				: (isVisible ? 'ツールを非表示' : 'ツールを表示');
+		}
+		
+		// Update route button text
+		const routeBtn = document.getElementById('route-btn');
+		if (routeBtn) {
+			routeBtn.textContent = newLanguage === 'english' ? 'Route to Gate' : '正門への経路';
+		}
 	});
 
 	// 初期メッセージを設定
@@ -103,15 +114,14 @@ function init() {
 		});
 	}
 	let markers = [];
-	initMap();
 
 	// current marker idの変数
 	let currentMarkerId = null;
 
 	function initMap(preservePosition = false) {
 		// Calculate initial center coordinates regardless of preservePosition
-		latSum = 0;
-		lonSum = 0;
+		let latSum = 0;
+		let lonSum = 0;
 		let validPoints = 0;
 
 		let bounds = new maplibregl.LngLatBounds();
@@ -139,9 +149,15 @@ function init() {
 		const currentCenter = preservePosition && map ? map.getCenter() : null;
 		const currentZoom = preservePosition && map ? map.getZoom() : null;
 
-		// Clear existing markers
+		// Clear existing markers (but preserve current location marker)
 		markers.forEach(marker => marker.remove());
 		markers = [];
+
+		// Re-add current location marker if it exists
+		if (currentLocationMarker && !preservePosition) {
+			// Keep the current location marker when not preserving position
+			currentLocationMarker.addTo(map);
+		}
 
 		// Initialize or update map
 		if (!map) {
@@ -149,11 +165,16 @@ function init() {
 			container: 'map',
 			style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
 			center: [centerLon, centerLat],
-			// zoom: 15
+			zoom: 15
 			});
 			if (validPoints > 0) {
 			map.fitBounds(bounds, { padding: 40 });
 			}
+			
+			// マップが読み込まれた後に現在地を自動取得
+			map.on('load', () => {
+				autoGetCurrentLocation();
+			});
 		} else if (!preservePosition) {
 			map.setCenter([centerLon, centerLat]);
 			if (validPoints > 0) {
@@ -232,8 +253,6 @@ function init() {
 			}
 		});
 
-		
-
 		// マーカーをマップに追加
 		rows.forEach((row, index) => {
 			const [id, category, jName, eName, lat, lon, jDescription, eDescription, link, hashutagu, linkname, numphotos] = row;
@@ -276,7 +295,7 @@ function init() {
 			customMarker.title = currentLanguage === 'japanese' ? jName : eName;
 
 			marker.getElement().addEventListener('click', (event) => {
-				event.stopPropagation(); // ←これを追加
+				event.stopPropagation();
 				// If same marker is clicked again, do nothing
 				if (lastClickedMarker === marker) {
 					document.getElementById('info').innerHTML = 'マーカーをクリックまたはタップして詳細を表示';
@@ -297,56 +316,80 @@ function init() {
 						</div>
 					`;
 					lastClickedMarker = marker;
-					showSlides(1);  // Reset to first slide when marker is clicked
+					showSlides(1);
 				}
 
 				currentMarkerId = id;
 				const leftPanel = document.getElementById('left-panel');
 				
-				// Reset slide index when new marker is clicked
 				slideIndex = 1;
 				
-				// Remove closed class to show panel
 				leftPanel.classList.remove('closed');
 				document.body.classList.add('panel-open');
-				showClosePanelBtn(true); // ← ここで表示
+				showClosePanelBtn(true);
 				
-				// Adjust map height for mobile
 				if (window.innerWidth <= 767) {
 					setTimeout(() => {
 						map.resize();
 					}, 300);
 				}
-				
-				const arrows = numphotos > 1 ? `
-					<a class="prev" onclick="plusSlides(-1)">&#10094;</a>
-					<a class="next" onclick="plusSlides(1)">&#10095;</a>
-				` : '';
-				
-				document.getElementById('info').innerHTML = `
-					<h2>${currentLanguage === 'japanese' ? jName : eName}</h2>
-					<p>${currentLanguage === 'japanese' ? jDescription : eDescription}</p>
-					<a href="${link}" target="_blank">${linkname}</a>
-					<div class="slideshow-container">
-						${rphotos}
-						${arrows}
-					</div>
-				`;
-				lastClickedMarker = marker;
-				showSlides(1);  // Reset to first slide when marker is clicked
 			});
 		});
-
-		
 	}
+
+	// 現在地を自動取得する関数
+	function autoGetCurrentLocation() {
+		if (!navigator.geolocation) {
+			console.log('Geolocation is not supported by this browser.');
+			return;
+		}
+
+		navigator.geolocation.getCurrentPosition(
+			(position) => {
+				const { latitude, longitude } = position.coords;
+				
+				// 現在地マーカーを作成
+				const currentLocationElement = document.createElement('div');
+				currentLocationElement.className = 'current-location-marker';
+				currentLocationElement.style.cssText = `
+					width: 30px;
+					height: 30px;
+					background-image: url('images/mp_simple_black2.png');
+					background-size: cover;
+					background-position: center;
+					cursor: pointer;
+					position: relative;
+					z-index: 1001;
+				`;
+				
+				// 現在地マーカーを地図に追加
+				currentLocationMarker = new maplibregl.Marker({ element: currentLocationElement })
+					.setLngLat([longitude, latitude])
+					.addTo(map);
+				
+				console.log(`Current location: ${latitude}, ${longitude}`);
+			},
+			(error) => {
+				console.error('Error getting current location:', error);
+			},
+			{
+				enableHighAccuracy: true,
+				timeout: 10000,
+				maximumAge: 60000
+			}
+		);
+	}
+
+	// 初期化を実行
+	initMap();
+
 	// create a function that regenerates the left panel based on the current marker id
 	function regenerateLeftPanel() {
-		// find the row that matches the current marker id
 		const row = rows.find(row => row[0] === currentMarkerId);
-		if (!row) return; // if no row is found, exit the function
+		if (!row) return;
 
 		const [id, category, jName, eName, lat, lon, jDescription, eDescription,link,hashutagu,linkname,numphotos] = row;
-		var rphotos = ''; // Object to store dynamically created variables
+		var rphotos = '';
 
 		for (let i = 1; i <= numphotos; i++) {
 			rphotos+=`<div class="mySlides fade"><img src="images/reitaku-${id}-${i}.jpg" style="width:100%;height:350px;object-fit:cover"></div> `;
@@ -367,9 +410,8 @@ function init() {
 				${rphotos}
 				${arrows}
 			</div>
-			
 		`;
-		showSlides(1);  // Reset to first slide when panel is regenerated
+		showSlides(1);
 	}
 
 	// 初期設定
@@ -395,7 +437,8 @@ function init() {
 		
 		// Filter rows to show only checked categories
 		rows = data.main.values.filter(row => checkedCategories.includes(parseInt(row[1])));
-		
+
+		// マーカーを再描画
 		initMap(true); // Pass true to preserve position
 	});
 
@@ -463,49 +506,58 @@ function init() {
 	// ルートレイヤーを管理
 	let routeLayerId = 'osrm-route-layer';
 	let routeSourceId = 'osrm-route-source';
+	let routePopup = null;
 
 	// 地図初期化後にクリックイベントを追加
 	function addRouteOnClick() {
-		let routePopup = null;
-		map.on('click', async (e) => {
-			 // クリック地点が既存マーカーの座標と一致する場合はルート検索しない
-			const clickLng = e.lngLat.lng;
-			const clickLat = e.lngLat.lat;
-			const threshold = 0.00005; // 緯度経度の許容誤差（約5m）
+		// Remove the click event for route search
+		// This function is now empty but kept for compatibility
+	}
 
-			// allRowsは全マーカー情報
-			const isMarkerClicked = allRows.some(row => {
-				const markerLat = parseFloat(row[4]);
-				const markerLon = parseFloat(row[5]);
-				return (
-					Math.abs(markerLat - clickLat) < threshold &&
-					Math.abs(markerLon - clickLng) < threshold
-				);
-			});
+	addRouteOnClick();
 
-			if (isMarkerClicked) {
-				// マーカー上のクリックなら何もしない
+	// 現在地から正門までの経路を表示する関数
+	function showRouteToGate() {
+		if (!currentLocationMarker) {
+			alert(currentLanguage === 'japanese' ? '現在地を先に取得してください。' : 'Please get your current location first.');
+			return;
+		}
+
+		if (gateLat === null || gateLon === null) {
+			findGateLatLon();
+			if (gateLat === null || gateLon === null) {
+				alert(currentLanguage === 'japanese' ? '正門の座標が見つかりません。' : 'Main gate coordinates not found.');
 				return;
 			}
-			else if (gateLat === null || gateLon === null) {
-				findGateLatLon();
-				if (gateLat === null || gateLon === null) {
-					alert('正門の座標が見つかりません');
-					return;
-				}
-			}
-			const start = [e.lngLat.lng, e.lngLat.lat];
-			const end = [gateLon, gateLat];
-			// OSRMサーバーのURL（公開サーバー）
-			const osrmUrl = `https://router.project-osrm.org/route/v1/foot/${start[0]},${start[1]};${end[0]},${end[1]}?overview=full&geometries=geojson`;
+		}
 
-			try {
-				const res = await fetch(osrmUrl);
-				const json = await res.json();
+		const currentPos = currentLocationMarker.getLngLat();
+		const start = [currentPos.lng, currentPos.lat];
+		const end = [gateLon, gateLat];
+		
+		// OSRMサーバーのURL（公開サーバー）
+		const osrmUrl = `https://router.project-osrm.org/route/v1/foot/${start[0]},${start[1]};${end[0]},${end[1]}?overview=full&geometries=geojson`;
+
+		// Show loading message
+		const loadingMessage = currentLanguage === 'japanese' ? '経路を検索中...' : 'Searching route...';
+		const infoDiv = document.getElementById('info');
+		if (infoDiv) {
+			infoDiv.innerHTML = loadingMessage + '<br>' + infoDiv.innerHTML;
+		}
+
+		fetch(osrmUrl)
+			.then(res => res.json())
+			.then(json => {
+				// Remove loading message
+				if (infoDiv) {
+					infoDiv.innerHTML = infoDiv.innerHTML.replace(loadingMessage + '<br>', '');
+				}
+
 				if (!json.routes || json.routes.length === 0) {
-					alert('ルートが見つかりません');
+					alert(currentLanguage === 'japanese' ? 'ルートが見つかりません。' : 'Route not found.');
 					return;
 				}
+
 				const route = json.routes[0].geometry;
 
 				// 既存ルートを削除
@@ -524,19 +576,20 @@ function init() {
 						geometry: route
 					}
 				});
+
 				const distance = json.routes[0].distance; // meters
 				const walkingSpeed = 1.3; // m/s (約4.7km/h)
 				const durationSeconds = distance / walkingSpeed;
 				const durationMinutes = Math.round(durationSeconds / 60);
 
-				const infoDiv = document.getElementById('info');
 				if (infoDiv) {
 					const distanceKm = (distance / 1000).toFixed(2);
 					const timeText = currentLanguage === 'japanese'
-						? `距離: ${distanceKm}km<br>徒歩の目安: 約${durationMinutes}分`
-						: `Distance: ${distanceKm}km<br>Estimated walk: ~${durationMinutes} min`;
+						? `正門までの距離: ${distanceKm}km<br>徒歩の目安: 約${durationMinutes}分`
+						: `Distance to main gate: ${distanceKm}km<br>Estimated walk: ~${durationMinutes} min`;
 					infoDiv.innerHTML = timeText + '<br>' + infoDiv.innerHTML;
 				}
+
 				map.addLayer({
 					id: routeLayerId,
 					type: 'line',
@@ -546,6 +599,7 @@ function init() {
 						'line-width': 5
 					}
 				});
+
 				if (route.coordinates && route.coordinates.length > 1) {
 					const midIndex = Math.floor(route.coordinates.length / 2);
 					const midCoord = route.coordinates[midIndex];
@@ -557,14 +611,120 @@ function init() {
 						.setHTML(`<div class="custom-popup">${popupText}</div>`)
 						.addTo(map);
 				}
-			} catch (err) {
-				alert('経路取得に失敗しました');
+			})
+			.catch(err => {
+				// Remove loading message
+				if (infoDiv) {
+					infoDiv.innerHTML = infoDiv.innerHTML.replace(loadingMessage + '<br>', '');
+				}
+				alert(currentLanguage === 'japanese' ? '経路取得に失敗しました。' : 'Failed to get route.');
 				console.error(err);
-			}
-		});
+			});
 	}
 
-	addRouteOnClick();
+	// 現在地を取得して表示する関数
+	function showCurrentLocation() {
+		if (!navigator.geolocation) {
+			alert(currentLanguage === 'japanese' ? '位置情報サービスがサポートされていません。' : 'Geolocation is not supported by this browser.');
+			return;
+		}
+
+		const loadingMessage = currentLanguage === 'japanese' ? '現在地を取得中...' : 'Getting current location...';
+		const infoDiv = document.getElementById('info');
+		if (infoDiv) {
+			infoDiv.innerHTML = loadingMessage + '<br>' + infoDiv.innerHTML;
+		}
+
+		navigator.geolocation.getCurrentPosition(
+			(position) => {
+				const { latitude, longitude } = position.coords;
+				
+				// 既存の現在地マーカーを削除
+				if (currentLocationMarker) {
+					currentLocationMarker.remove();
+				}
+				
+				// 現在地マーカーを作成
+				const currentLocationElement = document.createElement('div');
+				currentLocationElement.className = 'current-location-marker';
+				currentLocationElement.style.cssText = `
+					width: 30px;
+					height: 30px;
+					background-image: url('images/mp_simple_black2.png');
+					background-size: cover;
+					background-position: center;
+					cursor: pointer;
+					position: relative;
+					z-index: 1001;
+				`;
+				
+				// 現在地マーカーを地図に追加
+				currentLocationMarker = new maplibregl.Marker({ element: currentLocationElement })
+					.setLngLat([longitude, latitude])
+					.addTo(map);
+				
+				// 現在地に地図の中心を移動
+				map.easeTo({
+					center: [longitude, latitude],
+					zoom: 17,
+					duration: 1000
+				});
+				
+				// 現在地情報を表示
+				const locationInfo = currentLanguage === 'japanese' 
+					? `現在地: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`
+					: `Current Location: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+				
+				if (infoDiv) {
+					// Remove loading message and add location info
+					const currentContent = infoDiv.innerHTML.replace(loadingMessage + '<br>', '');
+					infoDiv.innerHTML = locationInfo + '<br>' + currentContent;
+				}
+			},
+			(error) => {
+				// Remove loading message
+				if (infoDiv) {
+					infoDiv.innerHTML = infoDiv.innerHTML.replace(loadingMessage + '<br>', '');
+				}
+				
+				let errorMessage = '';
+				switch(error.code) {
+					case error.PERMISSION_DENIED:
+						errorMessage = currentLanguage === 'japanese' 
+							? '位置情報の取得が拒否されました。'
+							: 'Location access denied.';
+						break;
+					case error.POSITION_UNAVAILABLE:
+						errorMessage = currentLanguage === 'japanese' 
+							? '位置情報が利用できません。'
+							: 'Location information is unavailable.';
+						break;
+					case error.TIMEOUT:
+						errorMessage = currentLanguage === 'japanese' 
+							? '位置情報の取得がタイムアウトしました。'
+							: 'Location request timed out.';
+						break;
+					default:
+						errorMessage = currentLanguage === 'japanese' 
+							? '位置情報の取得に失敗しました。'
+							: 'Failed to get location.';
+						break;
+				}
+				alert(errorMessage);
+			},
+			{
+				enableHighAccuracy: true,
+				timeout: 10000,
+				maximumAge: 60000
+			}
+		);
+	}
+
+	// イベントリスナーを関数定義の後に配置
+	const routeBtn = document.getElementById('route-btn');
+	if (routeBtn) {
+		routeBtn.addEventListener('click', showRouteToGate);
+	}
 
 	const closePanelBtn = document.getElementById('close-panel-btn');
 	function showClosePanelBtn(show) {
@@ -588,9 +748,7 @@ function init() {
 		}
 	});
 
-	// パネル再生成時もボタン表示
-	// function regenerateLeftPanel() { ... showClosePanelBtn(true); ... }
-}
+} // init関数の終了
 
 // Keep these functions outside init() as they're used globally
 function addGeoJsonLayer() {
