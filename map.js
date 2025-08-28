@@ -95,7 +95,7 @@ function init() {
 				lastClickedMarker = null;
 			} else {
 				const rphotos = Array.from({length: numphotos}, (_, i) => 
-					`<div class="mySlides fade"><img src="images/reitaku-${id}-${i + 1}.jpg" style="width:100%;height:350px;object-fit:cover"></div>`
+					`<div class="mySlides fade"><img src="images/reitaku-${id}-${i + 1}.jpg" style="width:100%;height:350px;object-fit:cover" class="clickable-image" data-image-path="images/reitaku-${id}-${i + 1}.jpg"></div>`
 				).join('');
 				
 				const arrows = numphotos > 1 ? `
@@ -109,6 +109,10 @@ function init() {
 					<a href="${link}" target="_blank">${linkname}</a>
 					<div class="slideshow-container">${rphotos}${arrows}</div>
 				`;
+				
+				// 画像クリックイベントを追加
+				addImageClickEvents();
+				
 				lastClickedMarker = marker;
 				showSlides(1);
 			}
@@ -233,7 +237,7 @@ function init() {
 
 		const [id, category, jName, eName, lat, lon, jDescription, eDescription, link, hashutagu, linkname, numphotos] = row;
 		const rphotos = Array.from({length: numphotos}, (_, i) => 
-			`<div class="mySlides fade"><img src="images/reitaku-${id}-${i + 1}.jpg" style="width:100%;height:350px;object-fit:cover"></div>`
+			`<div class="mySlides fade"><img src="images/reitaku-${id}-${i + 1}.jpg" style="width:100%;height:350px;object-fit:cover" class="clickable-image" data-image-path="images/reitaku-${id}-${i + 1}.jpg"></div>`
 		).join('');
 
 		const arrows = numphotos > 1 ? `
@@ -247,6 +251,9 @@ function init() {
 			<a href="${link}" target="_blank">${linkname}</a>
 			<div class="slideshow-container">${rphotos}${arrows}</div>
 		`;
+		
+		// 画像クリックイベントを追加
+		addImageClickEvents();
 		showSlides(1);
 	}
 
@@ -496,4 +503,64 @@ function removeGeoJsonLayer() {
 	map.removeLayer('geojson-layer');
 	map.removeSource('geojson-data');
 	map.easeTo({ pitch: 0, bearing: 0, duration: 1000 });
+}
+
+// 画像クリックイベントを追加する関数
+function addImageClickEvents() {
+	const clickableImages = document.querySelectorAll('.clickable-image');
+	clickableImages.forEach(img => {
+		img.addEventListener('click', function(e) {
+			e.stopPropagation();
+			const imagePath = this.getAttribute('data-image-path');
+			showImageModal(imagePath);
+		});
+	});
+}
+
+// 画面上にモーダルで画像を表示する関数
+function showImageModal(imagePath) {
+	// 既存のモーダルがあれば削除
+	const existingModal = document.getElementById('image-modal');
+	if (existingModal) {
+		existingModal.remove();
+	}
+
+	// モーダル要素を作成
+	const modal = document.createElement('div');
+	modal.id = 'image-modal';
+	modal.innerHTML = `
+		<div class="modal-overlay">
+			<div class="modal-content">
+				<button class="modal-close-btn" title="閉じる">×</button>
+				<img src="${imagePath}" alt="拡大画像" class="modal-image" />
+			</div>
+		</div>
+	`;
+
+	// bodyに追加
+	document.body.appendChild(modal);
+
+	// 閉じるボタンのイベント
+	const closeBtn = modal.querySelector('.modal-close-btn');
+	const overlay = modal.querySelector('.modal-overlay');
+
+	closeBtn.addEventListener('click', () => {
+		modal.remove();
+	});
+
+	// オーバーレイクリックで閉じる
+	overlay.addEventListener('click', (e) => {
+		if (e.target === overlay) {
+			modal.remove();
+		}
+	});
+
+	// ESCキーで閉じる
+	const escHandler = (e) => {
+		if (e.key === 'Escape') {
+			modal.remove();
+			document.removeEventListener('keydown', escHandler);
+		}
+	};
+	document.addEventListener('keydown', escHandler);
 }
