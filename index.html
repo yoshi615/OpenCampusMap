@@ -6,6 +6,46 @@
 	<title>The NEW Reitaku Campus Web Map</title>
 	<link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
 	<link rel="stylesheet" href="style.css">
+	<style>
+		/* モーダル内のスライドショーナビゲーション */
+		.modal-slideshow-nav {
+			position: absolute;
+			top: 50%;
+			background: rgba(0,0,0,0.5);
+			color: white;
+			border: none;
+			padding: 0;
+			margin: 0;
+			cursor: pointer;
+			font-size: 18px;
+			z-index: 1003;
+			user-select: none;
+			transition: background-color 0.3s ease, opacity 0.3s ease;
+			width: 50px;
+			height: 50px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border-radius: 4px;
+			box-sizing: border-box;
+			transform: translateY(-50%);
+			opacity: 0.7;
+		}
+		.modal-prev { 
+			left: 15px; 
+		}
+		.modal-next { 
+			right: 15px; 
+		}
+		.modal-slideshow-nav:hover {
+			background: rgba(0,0,0,0.8);
+			opacity: 1;
+			transform: translateY(-50%);
+		}
+		.modal-content {
+			position: relative;
+		}
+	</style>
 	<meta property="og:title" content="The NEW Reitaku Campus Web Map">
 	<meta property="og:url" content="https://yoshi615.github.io/OpenCampusMap/">
 	<meta property="og:type" content="website">
@@ -28,11 +68,7 @@
 			<div id="map">
 				<input type="text" id="marker-search" placeholder="名前で検索">
 				<button id="tools-toggle" class="tools-toggle" data-ja="ツールを表示" data-en="Show Tools">ツールを表示</button>
-				
-				<!-- Add route button only -->
-				<div class="map-controls-top-right">
-					<button id="route-btn" class="map-control-btn" data-ja="正門への経路" data-en="Route to Gate">正門への経路</button>
-				</div>
+				<button id="route-btn" class="map-control-btn" data-ja="正門への経路" data-en="Route to Gate">正門への経路</button>
 				
 				<div id="map-tools">
 					<div class="control-group">
@@ -109,5 +145,17 @@
 	<script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
 	<script src="map.js"></script>
 	<script src="getdata.js"></script>
+	<script>
+		// Add custom credit to existing MapLibre attribution
+		document.addEventListener('DOMContentLoaded', function() {
+			setTimeout(() => {
+				const attribution = document.querySelector('.maplibregl-ctrl-attrib-inner');
+				if (attribution) {
+					const customCredit = ', © <a href="https://ichijo.booth.pm/" target="_blank" rel="noopener noreferrer">アガタ水晶/一畳ちょっとの二人部屋BOOTH支店</a>';
+					attribution.innerHTML += customCredit;
+				}
+			}, 1000);
+		});
+	</script>
 </body>
 </html>
