@@ -1,5 +1,5 @@
 let map, currentLocationMarker = null;
-let currentMarkerId = null; // グローバルスコープに移動
+let currentMarkerId = null;
 
 function init() {
 	const leftPanel = document.getElementById('left-panel');
@@ -9,7 +9,6 @@ function init() {
 	let slideIndex = 1;
 	let lastClickedMarker = null;
 	let currentLanguage = 'japanese';
-	// let currentMarkerId = null; // この行を削除（グローバルに移動済み）
 	let markers = [];
 	let rows = data.main.values;
 	let allRows = data.main.values;
@@ -21,8 +20,8 @@ function init() {
 	let isRouteVisible = false;
 	const GATE_NAME = '正門';
 	let gateLat = null, gateLon = null;
-	let previousMapState = null; // マップの前の状態を保存
-	let is3DActive = false; // 3D状態を追跡
+	let previousMapState = null;
+	let is3DActive = false;
 
 	function plusSlides(n) { showSlides(slideIndex += n); }
 	
@@ -61,14 +60,14 @@ function init() {
 	function createMarker(row, index) {
 		const [id, category, jName, eName, lat, lon, jDescription, eDescription, link, hashutagu, linkname, numphotos] = row;
 		
-		const markerConfig = {
+		const markerConfigs = {
 			4: { image: 'reitaku-ex-1.jpg', size: '25px', radius: '50%' },
 			5: { image: 'reitaku-ex-2.jpg', size: '25px', radius: '0%' },
 			0: { image: `reitaku-${id}-1.jpg`, size: '40px', radius: '50%', zIndex: '1000' }
 		};
 
 		const customMarker = document.createElement('div');
-		const config = markerConfig[category] || { 
+		const config = markerConfigs[category] || { 
 			image: `reitaku-${id}-1.jpg`, size: '40px', radius: '50%', zIndex: index
 		};
 
@@ -113,9 +112,7 @@ function init() {
 					<div class="slideshow-container">${rphotos}${arrows}</div>
 				`;
 				
-				// 画像クリックイベントを追加
 				addImageClickEvents();
-				
 				lastClickedMarker = marker;
 				showSlides(1);
 			}
@@ -199,7 +196,7 @@ function init() {
 			map.setZoom(currentZoom);
 		}
 
-		// Map style dropdown setup
+		// Map style dropdown
 		const mapDropdown = document.getElementById('map-style-dropdown');
 		const mapStyles = {
 			'normal': 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
@@ -230,7 +227,6 @@ function init() {
 			}
 		});
 
-		// Create markers
 		rows.forEach(createMarker);
 	}
 
@@ -255,7 +251,6 @@ function init() {
 			<div class="slideshow-container">${rphotos}${arrows}</div>
 		`;
 		
-		// 画像クリックイベントを追加
 		addImageClickEvents();
 		showSlides(1);
 	}
@@ -268,9 +263,7 @@ function init() {
 			routePopup = null;
 		}
 
-		// 前のマップ状態に復元
 		if (previousMapState) {
-			// 境界がある場合はfitBounds、ない場合はcenter/zoomを使用
 			if (previousMapState.bounds.getNorthEast().lng !== previousMapState.bounds.getSouthWest().lng) {
 				map.fitBounds(previousMapState.bounds, {
 					padding: previousMapState.padding,
@@ -284,7 +277,6 @@ function init() {
 				});
 			}
 			
-			// 3D状態も復元
 			if (previousMapState.was3D) {
 				setTimeout(() => {
 					map.easeTo({ 
@@ -325,10 +317,7 @@ function init() {
 			}
 		}
 
-		// 現在のマップ状態を保存（3D状態も含む）
 		const currentBounds = new maplibregl.LngLatBounds();
-		
-		// 表示されているマーカーがある場合はそれらを使用、ない場合は全データを使用
 		const boundsRows = rows.length > 0 ? rows : allRows;
 		let hasValidBounds = false;
 		
@@ -340,9 +329,8 @@ function init() {
 			}
 		});
 		
-		// 有効な境界がない場合はデフォルト値を使用
 		if (!hasValidBounds) {
-			currentBounds.extend([139.9534, 35.8309]); // デフォルト座標
+			currentBounds.extend([139.9534, 35.8309]);
 		}
 		
 		previousMapState = {
@@ -416,19 +404,15 @@ function init() {
 					paint: { 'line-color': '#adff2f', 'line-width': 5 }
 				});
 
-				// 3D表示中の場合は一時的に2Dに切り替え
 				if (is3DActive) {
 					map.easeTo({ pitch: 0, bearing: 0, duration: 500 });
 				}
 
-				// ルート全体が画面に収まるようにマップを調整
 				const bounds = new maplibregl.LngLatBounds();
-				bounds.extend([currentPos.lng, currentPos.lat]); // 現在地
-				bounds.extend([gateLon, gateLat]); // 正門
-				// ルート上の全ての座標を範囲に追加
+				bounds.extend([currentPos.lng, currentPos.lat]);
+				bounds.extend([gateLon, gateLat]);
 				route.coordinates.forEach(coord => bounds.extend(coord));
 				
-				// パディングを追加してズーム調整
 				map.fitBounds(bounds, {
 					padding: 50,
 					duration: 1000
@@ -467,40 +451,33 @@ function init() {
 		else if (event.target.matches('.next')) plusSlides(1);
 	});
 
-	document.getElementById('languageToggle').addEventListener('change', function(e) {
-		const newLanguage = e.target.checked ? 'english' : 'japanese';
-		document.querySelectorAll('[data-ja], [data-en]').forEach(element => {
-			element.textContent = element.getAttribute(newLanguage === 'english' ? 'data-en' : 'data-ja');
-		});
-		setLanguage(newLanguage);
-		
-		const mapTools = document.getElementById('map-tools');
-		const toolsToggle = document.getElementById('tools-toggle');
-		if (mapTools && toolsToggle) {
-			const isVisible = mapTools.classList.contains('visible');
-			toolsToggle.textContent = newLanguage === 'english' 
-				? (isVisible ? 'Hide Tools' : 'Show Tools')
-				: (isVisible ? 'ツールを非表示' : 'ツールを表示');
-		}
-		updateRouteButtonText();
-	});
-
-	// Initialize
-	document.getElementById('info').innerHTML = '言語の選択とアイコンをクリックまたはタップして詳細を表示';
-	document.getElementById('info').style.marginTop = '20px';
-
-	const markerSearch = document.getElementById('marker-search');
-	if (markerSearch) {
-		markerSearch.addEventListener('input', function(e) {
+	// Consolidated event listeners
+	const eventHandlers = {
+		'languageToggle': function(e) {
+			const newLanguage = e.target.checked ? 'english' : 'japanese';
+			document.querySelectorAll('[data-ja], [data-en]').forEach(element => {
+				element.textContent = element.getAttribute(newLanguage === 'english' ? 'data-en' : 'data-ja');
+			});
+			setLanguage(newLanguage);
+			
+			const mapTools = document.getElementById('map-tools');
+			const toolsToggle = document.getElementById('tools-toggle');
+			if (mapTools && toolsToggle) {
+				const isVisible = mapTools.classList.contains('visible');
+				toolsToggle.textContent = newLanguage === 'english' 
+					? (isVisible ? 'Hide Tools' : 'Show Tools')
+					: (isVisible ? 'ツールを非表示' : 'ツールを表示');
+			}
+			updateRouteButtonText();
+		},
+		'marker-search': function(e) {
 			const keyword = e.target.value.trim().toLowerCase();
 			
 			if (!keyword) {
-				// 検索キーワードが空の場合は、チェックされたカテゴリのみ表示
-				const checkedCategories = Array.from(markerFilter.querySelectorAll('input[type="checkbox"]:checked'))
+				const checkedCategories = Array.from(document.getElementById('marker-filter').querySelectorAll('input[type="checkbox"]:checked'))
 					.map(checkbox => parseInt(checkbox.value));
 				rows = allRows.filter(row => checkedCategories.includes(parseInt(row[1])));
 			} else {
-				// 検索キーワードがある場合は、キーワードマッチするもののみ表示（カテゴリフィルターは無視）
 				rows = allRows.filter(row => {
 					const jName = (row[2] || '').toLowerCase();
 					const eName = (row[3] || '').toLowerCase();
@@ -509,17 +486,28 @@ function init() {
 			}
 			
 			initMap(true);
-		});
-	}
+		},
+		'threeDToggle': function(e) {
+			is3DActive = e.target.checked;
+			e.target.checked ? addGeoJsonLayer() : removeGeoJsonLayer();
+		}
+	};
+
+	// Apply event listeners
+	Object.keys(eventHandlers).forEach(id => {
+		const element = document.getElementById(id);
+		if (element) {
+			element.addEventListener(id === 'marker-search' ? 'input' : 'change', eventHandlers[id]);
+		}
+	});
+
+	// Initialize
+	document.getElementById('info').innerHTML = '言語の選択とアイコンをクリックまたはタップして詳細を表示';
+	document.getElementById('info').style.marginTop = '20px';
 
 	initMap();
 
-	// More event listeners
-	document.getElementById('threeDToggle').addEventListener('change', function(e) {
-		is3DActive = e.target.checked;
-		e.target.checked ? addGeoJsonLayer() : removeGeoJsonLayer();
-	});
-
+	// Remaining event listeners
 	const markerFilter = document.getElementById('marker-filter');
 	markerFilter.addEventListener('change', function(e) {
 		if (!e.target.matches('input[type="checkbox"]')) return;
@@ -530,49 +518,49 @@ function init() {
 		initMap(true);
 	});
 
-	document.getElementById('check-all').addEventListener('click', (e) => {
-		e.preventDefault();
-		markerFilter.querySelectorAll('input[type="checkbox"]').forEach(checkbox => checkbox.checked = true);
-		rows = data.main.values;
-		initMap(true);
-	});
-
-	document.getElementById('uncheck-all').addEventListener('click', (e) => {
-		e.preventDefault();
-		markerFilter.querySelectorAll('input[type="checkbox"]').forEach(checkbox => checkbox.checked = false);
-		rows = [];
-		initMap(true);
-	});
-
-	const panelHandle = document.getElementById('panel-handle');
-	panelHandle.addEventListener('click', () => {
-		leftPanel.classList.toggle('closed');
-		document.body.classList.toggle('panel-open');
-		if (leftPanel.classList.contains('closed')) showClosePanelBtn(false);
-		if (window.innerWidth <= 767) setTimeout(() => map.resize(), 300);
-	});
-
-	const toolsToggle = document.getElementById('tools-toggle');
-	const mapTools = document.getElementById('map-tools');
-	toolsToggle.addEventListener('click', () => {
-		const isVisible = mapTools.classList.contains('visible');
-		mapTools.classList.toggle('visible');
-		toolsToggle.textContent = currentLanguage === 'japanese' 
-			? (isVisible ? 'ツールを表示' : 'ツールを非表示')
-			: (isVisible ? 'Show Tools' : 'Hide Tools');
-	});
-
-	const routeBtn = document.getElementById('route-btn');
-	if (routeBtn) routeBtn.addEventListener('click', toggleRouteToGate);
-
-	const closePanelBtn = document.getElementById('close-panel-btn');
-	if (closePanelBtn) {
-		closePanelBtn.addEventListener('click', () => {
+	// Button event listeners
+	const buttonActions = {
+		'check-all': () => {
+			markerFilter.querySelectorAll('input[type="checkbox"]').forEach(checkbox => checkbox.checked = true);
+			rows = data.main.values;
+			initMap(true);
+		},
+		'uncheck-all': () => {
+			markerFilter.querySelectorAll('input[type="checkbox"]').forEach(checkbox => checkbox.checked = false);
+			rows = [];
+			initMap(true);
+		},
+		'panel-handle': () => {
+			leftPanel.classList.toggle('closed');
+			document.body.classList.toggle('panel-open');
+			if (leftPanel.classList.contains('closed')) showClosePanelBtn(false);
+			if (window.innerWidth <= 767) setTimeout(() => map.resize(), 300);
+		},
+		'tools-toggle': () => {
+			const mapTools = document.getElementById('map-tools');
+			const isVisible = mapTools.classList.contains('visible');
+			mapTools.classList.toggle('visible');
+			document.getElementById('tools-toggle').textContent = currentLanguage === 'japanese' 
+				? (isVisible ? 'ツールを表示' : 'ツールを非表示')
+				: (isVisible ? 'Show Tools' : 'Hide Tools');
+		},
+		'route-btn': toggleRouteToGate,
+		'close-panel-btn': () => {
 			leftPanel.classList.add('closed');
 			document.body.classList.remove('panel-open');
 			showClosePanelBtn(false);
-		});
-	}
+		}
+	};
+
+	Object.keys(buttonActions).forEach(id => {
+		const element = document.getElementById(id);
+		if (element) {
+			element.addEventListener('click', (e) => {
+				if (['check-all', 'uncheck-all'].includes(id)) e.preventDefault();
+				buttonActions[id]();
+			});
+		}
+	});
 }
 
 function addGeoJsonLayer() {
@@ -597,7 +585,6 @@ function removeGeoJsonLayer() {
 	map.easeTo({ pitch: 0, bearing: 0, duration: 1000 });
 }
 
-// 画像クリックイベントを追加する関数
 function addImageClickEvents() {
 	const clickableImages = document.querySelectorAll('.clickable-image');
 	clickableImages.forEach(img => {
@@ -609,42 +596,28 @@ function addImageClickEvents() {
 	});
 }
 
-// 画面上にモーダルで画像を表示する関数
 function showImageModal(imagePath) {
-	console.log('showImageModal called with:', imagePath);
-	console.log('currentMarkerId:', currentMarkerId);
-	
-	// 既存のモーダルがあれば削除
 	const existingModal = document.getElementById('image-modal');
-	if (existingModal) {
-		existingModal.remove();
-	}
+	if (existingModal) existingModal.remove();
 
-	// 現在表示中のマーカー情報を取得
 	let currentRow = null;
 	let currentImageIndex = 0;
 	let numphotos = 1;
 	
-	// currentMarkerIdが設定されている場合はそれを使用
 	if (currentMarkerId !== null) {
 		currentRow = data.main.values.find(row => row[0] == currentMarkerId);
-		console.log('Found currentRow:', currentRow);
 	}
 	
 	if (currentRow) {
 		const [id, , , , , , , , , , , photos] = currentRow;
 		numphotos = parseInt(photos) || 1;
-		console.log('numphotos:', numphotos);
 		
-		// 画像パスから現在のインデックスを取得
 		const match = imagePath.match(/reitaku-(\d+)-(\d+)\.jpg$/);
 		if (match) {
 			currentImageIndex = parseInt(match[2]) - 1;
 		}
-		console.log('currentImageIndex:', currentImageIndex);
 	}
 	
-	// ナビゲーションボタンを含むモーダル要素を作成
 	const navButtons = numphotos > 1 ? `
 		<button class="modal-slideshow-nav modal-prev">&#10094;</button>
 		<button class="modal-slideshow-nav modal-next">&#10095;</button>
@@ -662,12 +635,10 @@ function showImageModal(imagePath) {
 		</div>
 	`;
 
-	// bodyに追加
 	document.body.appendChild(modal);
 
 	let currentIndex = currentImageIndex;
 
-	// 画像を更新する関数
 	function updateModalImage(newIndex) {
 		if (currentRow) {
 			const [id] = currentRow;
@@ -675,24 +646,20 @@ function showImageModal(imagePath) {
 			if (modalImg) {
 				modalImg.src = `images/reitaku-${id}-${newIndex + 1}.jpg`;
 				currentIndex = newIndex;
-				console.log('Updated to image index:', newIndex);
 			}
 		}
 	}
 
-	// 前の画像に移動
 	function goToPrevImage() {
 		const newIndex = currentIndex > 0 ? currentIndex - 1 : numphotos - 1;
 		updateModalImage(newIndex);
 	}
 
-	// 次の画像に移動
 	function goToNextImage() {
 		const newIndex = currentIndex < numphotos - 1 ? currentIndex + 1 : 0;
 		updateModalImage(newIndex);
 	}
 
-	// ナビゲーションイベント
 	if (numphotos > 1 && currentRow) {
 		const prevBtn = modal.querySelector('.modal-prev');
 		const nextBtn = modal.querySelector('.modal-next');
@@ -711,7 +678,6 @@ function showImageModal(imagePath) {
 			});
 		}
 
-		// タッチスワイプ機能を追加
 		const modalImage = modal.querySelector('.modal-image');
 		let startX = null;
 		let startY = null;
@@ -729,24 +695,19 @@ function showImageModal(imagePath) {
 			const deltaX = touch.clientX - startX;
 			const deltaY = touch.clientY - startY;
 
-			// 水平方向のスワイプ距離が垂直方向より大きく、かつ50px以上の場合
 			if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
 				if (deltaX > 0) {
-					// 右スワイプ：前の画像
 					goToPrevImage();
 				} else {
-					// 左スワイプ：次の画像
 					goToNextImage();
 				}
 			}
 
-			// リセット
 			startX = null;
 			startY = null;
 		}, { passive: true });
 	}
 
-	// 閉じるボタンのイベント
 	const closeBtn = modal.querySelector('.modal-close-btn');
 	const overlay = modal.querySelector('.modal-overlay');
 
@@ -754,14 +715,12 @@ function showImageModal(imagePath) {
 		modal.remove();
 	});
 
-	// オーバーレイクリックで閉じる
 	overlay.addEventListener('click', (e) => {
 		if (e.target === overlay) {
 			modal.remove();
 		}
 	});
 
-	// ESCキーで閉じる
 	const escHandler = (e) => {
 		if (e.key === 'Escape') {
 			modal.remove();
