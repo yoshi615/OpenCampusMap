@@ -1,4 +1,5 @@
 let map, currentLocationMarker = null;
+let currentMarkerId = null; // グローバルスコープに移動
 
 function init() {
 	const leftPanel = document.getElementById('left-panel');
@@ -8,7 +9,7 @@ function init() {
 	let slideIndex = 1;
 	let lastClickedMarker = null;
 	let currentLanguage = 'japanese';
-	let currentMarkerId = null;
+	// let currentMarkerId = null; // この行を削除（グローバルに移動済み）
 	let markers = [];
 	let rows = data.main.values;
 	let allRows = data.main.values;
@@ -20,6 +21,8 @@ function init() {
 	let isRouteVisible = false;
 	const GATE_NAME = '正門';
 	let gateLat = null, gateLon = null;
+	let previousMapState = null; // マップの前の状態を保存
+	let is3DActive = false; // 3D状態を追跡
 
 	function plusSlides(n) { showSlides(slideIndex += n); }
 	
@@ -265,6 +268,36 @@ function init() {
 			routePopup = null;
 		}
 
+		// 前のマップ状態に復元
+		if (previousMapState) {
+			// 境界がある場合はfitBounds、ない場合はcenter/zoomを使用
+			if (previousMapState.bounds.getNorthEast().lng !== previousMapState.bounds.getSouthWest().lng) {
+				map.fitBounds(previousMapState.bounds, {
+					padding: previousMapState.padding,
+					duration: 1000
+				});
+			} else {
+				map.easeTo({
+					center: previousMapState.center,
+					zoom: previousMapState.zoom,
+					duration: 1000
+				});
+			}
+			
+			// 3D状態も復元
+			if (previousMapState.was3D) {
+				setTimeout(() => {
+					map.easeTo({ 
+						pitch: previousMapState.pitch, 
+						bearing: previousMapState.bearing, 
+						duration: 1000 
+					});
+				}, 100);
+			}
+			
+			previousMapState = null;
+		}
+
 		const infoDiv = document.getElementById('info');
 		if (infoDiv) {
 			const lines = infoDiv.innerHTML.split('<br>');
@@ -291,6 +324,36 @@ function init() {
 				return;
 			}
 		}
+
+		// 現在のマップ状態を保存（3D状態も含む）
+		const currentBounds = new maplibregl.LngLatBounds();
+		
+		// 表示されているマーカーがある場合はそれらを使用、ない場合は全データを使用
+		const boundsRows = rows.length > 0 ? rows : allRows;
+		let hasValidBounds = false;
+		
+		boundsRows.forEach(row => {
+			const [, , , , lat, lon] = row;
+			if (lat && lon) {
+				currentBounds.extend([parseFloat(lon), parseFloat(lat)]);
+				hasValidBounds = true;
+			}
+		});
+		
+		// 有効な境界がない場合はデフォルト値を使用
+		if (!hasValidBounds) {
+			currentBounds.extend([139.9534, 35.8309]); // デフォルト座標
+		}
+		
+		previousMapState = {
+			bounds: currentBounds,
+			padding: 40,
+			was3D: is3DActive,
+			pitch: map.getPitch(),
+			bearing: map.getBearing(),
+			center: map.getCenter(),
+			zoom: map.getZoom()
+		};
 
 		const currentPos = currentLocationMarker.getLngLat();
 		const start = [currentPos.lng, currentPos.lat];
@@ -353,6 +416,24 @@ function init() {
 					paint: { 'line-color': '#adff2f', 'line-width': 5 }
 				});
 
+				// 3D表示中の場合は一時的に2Dに切り替え
+				if (is3DActive) {
+					map.easeTo({ pitch: 0, bearing: 0, duration: 500 });
+				}
+
+				// ルート全体が画面に収まるようにマップを調整
+				const bounds = new maplibregl.LngLatBounds();
+				bounds.extend([currentPos.lng, currentPos.lat]); // 現在地
+				bounds.extend([gateLon, gateLat]); // 正門
+				// ルート上の全ての座標を範囲に追加
+				route.coordinates.forEach(coord => bounds.extend(coord));
+				
+				// パディングを追加してズーム調整
+				map.fitBounds(bounds, {
+					padding: 50,
+					duration: 1000
+				});
+
 				if (route.coordinates && route.coordinates.length > 1) {
 					const midCoord = route.coordinates[Math.floor(route.coordinates.length / 2)];
 					routePopup = new maplibregl.Popup({ closeOnClick: false, closeButton: false })
@@ -412,11 +493,21 @@ function init() {
 	if (markerSearch) {
 		markerSearch.addEventListener('input', function(e) {
 			const keyword = e.target.value.trim().toLowerCase();
-			rows = !keyword ? allRows : allRows.filter(row => {
-				const jName = (row[2] || '').toLowerCase();
-				const eName = (row[3] || '').toLowerCase();
-				return jName.includes(keyword) || eName.includes(keyword);
-			});
+			
+			if (!keyword) {
+				// 検索キーワードが空の場合は、チェックされたカテゴリのみ表示
+				const checkedCategories = Array.from(markerFilter.querySelectorAll('input[type="checkbox"]:checked'))
+					.map(checkbox => parseInt(checkbox.value));
+				rows = allRows.filter(row => checkedCategories.includes(parseInt(row[1])));
+			} else {
+				// 検索キーワードがある場合は、キーワードマッチするもののみ表示（カテゴリフィルターは無視）
+				rows = allRows.filter(row => {
+					const jName = (row[2] || '').toLowerCase();
+					const eName = (row[3] || '').toLowerCase();
+					return jName.includes(keyword) || eName.includes(keyword);
+				});
+			}
+			
 			initMap(true);
 		});
 	}
@@ -425,6 +516,7 @@ function init() {
 
 	// More event listeners
 	document.getElementById('threeDToggle').addEventListener('change', function(e) {
+		is3DActive = e.target.checked;
 		e.target.checked ? addGeoJsonLayer() : removeGeoJsonLayer();
 	});
 
@@ -519,13 +611,45 @@ function addImageClickEvents() {
 
 // 画面上にモーダルで画像を表示する関数
 function showImageModal(imagePath) {
+	console.log('showImageModal called with:', imagePath);
+	console.log('currentMarkerId:', currentMarkerId);
+	
 	// 既存のモーダルがあれば削除
 	const existingModal = document.getElementById('image-modal');
 	if (existingModal) {
 		existingModal.remove();
 	}
 
-	// モーダル要素を作成
+	// 現在表示中のマーカー情報を取得
+	let currentRow = null;
+	let currentImageIndex = 0;
+	let numphotos = 1;
+	
+	// currentMarkerIdが設定されている場合はそれを使用
+	if (currentMarkerId !== null) {
+		currentRow = data.main.values.find(row => row[0] == currentMarkerId);
+		console.log('Found currentRow:', currentRow);
+	}
+	
+	if (currentRow) {
+		const [id, , , , , , , , , , , photos] = currentRow;
+		numphotos = parseInt(photos) || 1;
+		console.log('numphotos:', numphotos);
+		
+		// 画像パスから現在のインデックスを取得
+		const match = imagePath.match(/reitaku-(\d+)-(\d+)\.jpg$/);
+		if (match) {
+			currentImageIndex = parseInt(match[2]) - 1;
+		}
+		console.log('currentImageIndex:', currentImageIndex);
+	}
+	
+	// ナビゲーションボタンを含むモーダル要素を作成
+	const navButtons = numphotos > 1 ? `
+		<button class="modal-slideshow-nav modal-prev">&#10094;</button>
+		<button class="modal-slideshow-nav modal-next">&#10095;</button>
+	` : '';
+
 	const modal = document.createElement('div');
 	modal.id = 'image-modal';
 	modal.innerHTML = `
@@ -533,12 +657,94 @@ function showImageModal(imagePath) {
 			<div class="modal-content">
 				<button class="modal-close-btn" title="閉じる">×</button>
 				<img src="${imagePath}" alt="拡大画像" class="modal-image" />
+				${navButtons}
 			</div>
 		</div>
 	`;
 
 	// bodyに追加
 	document.body.appendChild(modal);
+
+	let currentIndex = currentImageIndex;
+
+	// 画像を更新する関数
+	function updateModalImage(newIndex) {
+		if (currentRow) {
+			const [id] = currentRow;
+			const modalImg = modal.querySelector('.modal-image');
+			if (modalImg) {
+				modalImg.src = `images/reitaku-${id}-${newIndex + 1}.jpg`;
+				currentIndex = newIndex;
+				console.log('Updated to image index:', newIndex);
+			}
+		}
+	}
+
+	// 前の画像に移動
+	function goToPrevImage() {
+		const newIndex = currentIndex > 0 ? currentIndex - 1 : numphotos - 1;
+		updateModalImage(newIndex);
+	}
+
+	// 次の画像に移動
+	function goToNextImage() {
+		const newIndex = currentIndex < numphotos - 1 ? currentIndex + 1 : 0;
+		updateModalImage(newIndex);
+	}
+
+	// ナビゲーションイベント
+	if (numphotos > 1 && currentRow) {
+		const prevBtn = modal.querySelector('.modal-prev');
+		const nextBtn = modal.querySelector('.modal-next');
+
+		if (prevBtn) {
+			prevBtn.addEventListener('click', (e) => {
+				e.stopPropagation();
+				goToPrevImage();
+			});
+		}
+
+		if (nextBtn) {
+			nextBtn.addEventListener('click', (e) => {
+				e.stopPropagation();
+				goToNextImage();
+			});
+		}
+
+		// タッチスワイプ機能を追加
+		const modalImage = modal.querySelector('.modal-image');
+		let startX = null;
+		let startY = null;
+
+		modalImage.addEventListener('touchstart', (e) => {
+			const touch = e.touches[0];
+			startX = touch.clientX;
+			startY = touch.clientY;
+		}, { passive: true });
+
+		modalImage.addEventListener('touchend', (e) => {
+			if (!startX || !startY) return;
+
+			const touch = e.changedTouches[0];
+			const deltaX = touch.clientX - startX;
+			const deltaY = touch.clientY - startY;
+
+			// 水平方向のスワイプ距離が垂直方向より大きく、かつ50px以上の場合
+			if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+				if (deltaX > 0) {
+					// 右スワイプ：前の画像
+					goToPrevImage();
+				} else {
+					// 左スワイプ：次の画像
+					goToNextImage();
+				}
+			}
+
+			// リセット
+			startX = null;
+			startY = null;
+		}, { passive: true });
+	}
 
 	// 閉じるボタンのイベント
 	const closeBtn = modal.querySelector('.modal-close-btn');
