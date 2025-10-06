@@ -39,9 +39,15 @@
 	<meta property="og:title" content="The NEW Reitaku Campus Web Map">
 	<meta property="og:url" content="https://yoshi615.github.io/OpenCampusMap/">
 	<meta property="og:type" content="website">
-	<link rel="apple-touch-icon" href="images/Map_icon.png">
+	<meta property="og:image" content="images/pwa_icon_192.png">
+	
+	<!-- PWA settings -->
+	<meta name="theme-color" content="#1976d2">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="default">
+	<meta name="apple-mobile-web-app-title" content="Reitaku Map">
+	<link rel="apple-touch-icon" href="images/pwa_icon_192.png">
 	<link rel="manifest" href="manifest.json">
-	<meta property="og:image" content="images/Map_icon.png">
 </head>
 <body>
 	<img src="https://www.reitaku-u.ac.jp/_assets/images/logo.svg" alt="Reitaku University Logo" id="reitaku-logo">
@@ -135,6 +141,19 @@
 	<script src="map.js"></script>
 	<script src="getdata.js"></script>
 	<script>
+		// Service Worker registration
+		if ('serviceWorker' in navigator) {
+			window.addEventListener('load', function() {
+				navigator.serviceWorker.register('sw.js')
+					.then(function(registration) {
+						console.log('ServiceWorker registration successful');
+					})
+					.catch(function(err) {
+						console.log('ServiceWorker registration failed: ', err);
+					});
+			});
+		}
+		
 		document.addEventListener('DOMContentLoaded', function() {
 			setTimeout(() => {
 				const attribution = document.querySelector('.maplibregl-ctrl-attrib-inner');
