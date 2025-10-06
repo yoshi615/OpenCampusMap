@@ -1,14 +1,13 @@
-
 const CACHE_NAME = 'reitaku-map-v1';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/style.css',
-  '/map.js',
-  '/getdata.js',
-  '/manifest.json',
-  '/images/pwa_icon_192.png',
-  '/images/pwa_icon_512.png',
+  './',
+  './index.html',
+  './style.css',
+  './map.js',
+  './getdata.js',
+  './manifest.json',
+  './images/pwa_icon_192.png',
+  './images/pwa_icon_512.png',
   'https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css',
   'https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js'
 ];
