@@ -544,6 +544,9 @@ function init() {
 			document.body.classList.remove('panel-open');
 			showClosePanelBtn(false);
 			lastClickedMarker = null;
+			if (window.innerWidth <= 767) {
+				setTimeout(() => map.resize(), 300);
+			}
 		}
 	};
 
