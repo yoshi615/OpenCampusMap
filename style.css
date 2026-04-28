@@ -11,6 +11,34 @@ button {
     border-radius: 4px;
 }
 
+.modal-slideshow-nav {
+	position: absolute;
+	top: 50%;
+	background: rgba(0,0,0,0.5);
+	color: white;
+	border: none;
+	padding: 0;
+	cursor: pointer;
+	font-size: 18px;
+	z-index: 1003;
+	user-select: none;
+	transition: background-color 0.3s ease, opacity 0.3s ease;
+	width: 50px;
+	height: 50px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 4px;
+	transform: translateY(-50%);
+	opacity: 0.7;
+}
+.modal-prev { left: 15px; }
+.modal-next { right: 15px; }
+.modal-slideshow-nav:hover {
+    opacity: 1;
+}
+.modal-content { position: relative; }
+
 button:hover {
     background-color: #163900;
     transform: scale(1.05);
@@ -104,23 +132,6 @@ body {
     box-sizing: border-box;
 }
 
-#panel-handle {
-    background: white;
-    border: 1px solid #ddd;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 2px 0 4px rgba(0,0,0,0.1);
-}
-
-.handle-icon {
-    color: #296460;
-    font-size: 24px;
-    font-weight: bold;
-    transition: transform 0.3s;
-}
-
 #right-panel {
     position: relative;
     z-index: 1;
@@ -178,28 +189,25 @@ button.map-control:hover {
     background-color: #163900;
 }
 
-#marker-search {
+.marker-search {
     padding: 8px 12px;
     border: 1px solid #aaa;
     border-radius: 6px;
     margin: 10px 0;
     width: 130px;
     height: 30px;
-    position: absolute;
-    z-index: 9999;
-    top: -2px;
     font-size: 13px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     color: white !important;
     background: #296460;
 }
 
-#marker-search:focus {
+.marker-search:focus {
     border: 1.5px solid transparent;
     outline: none;
 }
 
-#marker-search::placeholder {
+.marker-search::placeholder {
     color: white;
 }
 
@@ -234,21 +242,6 @@ button.map-control:hover {
         width: 100%;
     }
     
-    #panel-handle {
-        position: absolute;
-        right: -32px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 30px;
-        height: 60px;
-        border-left: none;
-        border-radius: 0 4px 4px 0;
-    }
-    
-    .handle-icon {
-        transform: rotate(180deg);
-    }
-    
     #left-panel.closed .handle-icon {
         transform: rotate(0deg);
     }
@@ -280,10 +273,7 @@ button.map-control:hover {
         font-size: 14px;
         width: 200px;
     }
-    
-    #marker-search {
-        right: 220px;
-    }
+
 }
 
 /* スマートフォン用レイアウト */
@@ -316,20 +306,7 @@ button.map-control:hover {
         height: 50vh;
     }
     
-    #panel-handle {
-        position: fixed;
-        bottom: 46vh;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 60px;
-        height: 30px;
-        border-bottom: none;
-        box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
-        z-index: 1000;
-        transition: bottom 0.3s ease-in-out;
-    }
-    
-    #left-panel.closed #panel-handle {
+    #left-panel.closed {
         bottom: 0;
     }
     
@@ -368,10 +345,6 @@ button.map-control:hover {
         height: 50vh;
     }
 
-    #marker-search {
-        right: 248px;
-        top: 40px;
-    }
 }
 
 /* スイッチ共通スタイル */

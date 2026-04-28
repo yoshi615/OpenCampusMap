@@ -6,36 +6,6 @@
 	<title>The NEW Reitaku Campus Web Map</title>
 	<link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
 	<link rel="stylesheet" href="style.css">
-	<style>
-		.modal-slideshow-nav {
-			position: absolute;
-			top: 50%;
-			background: rgba(0,0,0,0.5);
-			color: white;
-			border: none;
-			padding: 0;
-			cursor: pointer;
-			font-size: 18px;
-			z-index: 1003;
-			user-select: none;
-			transition: background-color 0.3s ease, opacity 0.3s ease;
-			width: 50px;
-			height: 50px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			border-radius: 4px;
-			transform: translateY(-50%);
-			opacity: 0.7;
-		}
-		.modal-prev { left: 15px; }
-		.modal-next { right: 15px; }
-		.modal-slideshow-nav:hover {
-			background: rgba(0,0,0,0.8);
-			opacity: 1;
-		}
-		.modal-content { position: relative; }
-	</style>
 	<meta property="og:title" content="The NEW Reitaku Campus Web Map">
 	<meta property="og:url" content="https://yoshi615.github.io/OpenCampusMap/">
 	<meta property="og:type" content="website">
@@ -53,19 +23,16 @@
 	<img src="https://www.reitaku-u.ac.jp/_assets/images/logo.svg" alt="Reitaku University Logo" id="reitaku-logo">
 	<div class="container">
 		<div id="left-panel" class="closed">
-			<div id="panel-handle">
-				<span class="handle-icon"></span>
-			</div>
 			<button id="close-panel-btn" style="display:none; position:absolute; top:10px; right:10px; z-index:10;">×</button>
 			<div id="info">Hover over a marker for details</div>
 		</div>
 		<div id="right-panel">
 			<div id="map">
-				<input type="text" id="marker-search" placeholder="名前で検索">
 				<button id="tools-toggle" class="tools-toggle" data-ja="ツールを表示" data-en="Show Tools">ツールを表示</button>
 				<button id="route-btn" class="map-control-btn" data-ja="正門への経路" data-en="Route to Gate">正門への経路</button>
 				
 				<div id="map-tools">
+					<input type="text" class="marker-search" placeholder="名前で検索">
 					<div class="control-group">
 						<label class="control-label" data-ja="タイムマシン" data-en="Time Machine">タイムマシン</label>
 						<select id="map-style-dropdown" class="map-control">
