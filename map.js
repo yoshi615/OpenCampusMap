@@ -495,9 +495,9 @@ function init() {
 
 	// Apply event listeners
 	Object.keys(eventHandlers).forEach(id => {
-		const element = document.getElementById(id);
-		if (element) {
-			element.addEventListener(id === 'marker-search' ? 'input' : 'change', eventHandlers[id]);
+		const searchInput = document.querySelector('.marker-search');
+		if (searchInput) {
+			searchInput.addEventListener('input', eventHandlers['marker-search']);
 		}
 	});
 
@@ -530,12 +530,6 @@ function init() {
 			rows = [];
 			initMap(true);
 		},
-		'panel-handle': () => {
-			leftPanel.classList.toggle('closed');
-			document.body.classList.toggle('panel-open');
-			if (leftPanel.classList.contains('closed')) showClosePanelBtn(false);
-			if (window.innerWidth <= 767) setTimeout(() => map.resize(), 300);
-		},
 		'tools-toggle': () => {
 			const mapTools = document.getElementById('map-tools');
 			const isVisible = mapTools.classList.contains('visible');
@@ -549,6 +543,7 @@ function init() {
 			leftPanel.classList.add('closed');
 			document.body.classList.remove('panel-open');
 			showClosePanelBtn(false);
+			lastClickedMarker = null;
 		}
 	};
 
